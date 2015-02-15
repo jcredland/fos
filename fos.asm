@@ -178,6 +178,9 @@ hang:
     call vga_clear_screen
     mov bx, string.protectedmode
     call vga_print_string
+    call vga_new_line
+    mov bx, string.pongmessage
+    call vga_print_string
     jmp $
 
 ;------------------------
@@ -191,10 +194,13 @@ hang:
 
 vga_print_string:
     push ax
-    push dx
+    push edx
+    push ecx
+
     mov edx, videomem_base
     mov ah, 0xD
-    mov ecx, [vgadata.cursor]
+    mov ecx, 0
+    mov cx, [vgadata.cursor]
 .loop
     mov al, [ebx]
     cmp al, 0
@@ -204,7 +210,7 @@ vga_print_string:
     inc ebx
     inc ecx
 
-    cmp ecx, videomem_end
+    cmp ecx, 80 * 25
     je .scroll
     jmp .loop
 
@@ -214,19 +220,63 @@ vga_print_string:
     jmp .loop
 
 .end
-    mov [vgadata.cursor], ecx
-    pop dx
+    mov [vgadata.cursor], cx
+
+    call vga_update_cursor_pos
+
+    pop ecx
+    pop edx
     pop ax
+    ret
+
+vga_new_line:
+    push eax
+
+    mov ax, [vgadata.cursor]
+    mov bl, [vgadata.columns]
+
+    div bl ; result is in al, ah contains remainder
+    mov ah, 0
+
+    inc al ; add one row, our new line.
+
+    cmp al, [vgadata.rows] ; check we haven't run out of room
+    jne .noscroll 
+
+    ; otherwise we need to scroll and stay on the same line
+
+    dec al
+    call vga_scroll_one_line
+
+.noscroll
+    mul bl  ; and multiply ax by the number of columns again 
+    mov [vgadata.cursor], ax
+
+    pop eax
+
     ret
 
 vga_scroll_one_line:
     push ecx
     push eax
+    push edi
 
     mov ecx, 0
-    mov eax, 
-    
+.loop
+    mov eax, [ecx * 4 + videomem_base + 80]
+    mov [ecx * 4 + videomem_base], eax
+    inc ecx
+    cmp ecx, 80 * 24 / 2
+    jne .loop
 
+    ;   Clear last row
+    mov ah, 0
+    mov al, ' '
+    mov ecx, 80
+    mov edi, videomem_base + 80 * 24
+    rep stosw
+
+    pop edi
     pop eax
     pop ecx 
 
@@ -315,6 +365,7 @@ vgadata:
 string:
 .protectedmode
     db 'F/OS running in 32-bit protected mode', 0
+.pongmessage
     db 'Pong to the Fong', 0
    
    
