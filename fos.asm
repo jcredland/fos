@@ -1,7 +1,7 @@
-    global main
+    global boot
     bits 16
 
-main:
+boot:
 ; configure stack. Segment registers presumed to be all 0.
     mov bp, stack.stacktop
     mov sp, bp
@@ -50,7 +50,7 @@ bios_print_string:
 ; assumes stage 2 is immediately after the first sector.
 load_stage_2:
     mov ah, 02h
-    mov al, 8h ; number of sectors
+    mov al, 20h ; number of sectors
     mov ch, 0h ; cylinder
     mov dh, 0h ; head
     mov cl, 2h ; sector 2
@@ -61,7 +61,8 @@ load_stage_2:
 .error
     mov bx, disk_error_string
     call bios_print_string
-    jmp $
+
+    ret ; carry on anyway...
 
 ; ---
 ; setup a20 address line
@@ -181,7 +182,12 @@ hang:
     call vga_new_line
     mov bx, string.pongmessage
     call vga_print_string
-    jmp $
+    call vga_new_line
+    mov bx, string.movingonup
+    call vga_print_string
+    call vga_new_line
+    [extern main]
+    jmp main
 
 ;------------------------
 ; VGA DRIVER
@@ -367,6 +373,8 @@ string:
     db 'F/OS running in 32-bit protected mode', 0
 .pongmessage
     db 'Pong to the Fong', 0
+.movingonup
+    db 'Starting Stage 3', 0
    
    
 gdt:
@@ -395,10 +403,8 @@ gdt_descriptor:
 .addr
     dd gdt.start
 
-
-
-space:
-    times 8192-($-$$) db 0  
+end_marker:
+    db 0x1234
 stage2_end:
 
 

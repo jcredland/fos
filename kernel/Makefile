@@ -1,7 +1,10 @@
 CC = i686-elf-gcc
+CXX = i686-elf-g++
+CXXFLAGS = -ffreestanding -std=c++11
 
-all: kernel.bin
+all: main.o vga.o
 
-kernel.bin: main.c
-	$(CC) -ffreestanding -c main.c -o main.o
+vga.o: vga.cpp
+
+main.o: main.cpp vga.h
 
