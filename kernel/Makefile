@@ -1,10 +1,13 @@
+
 CC = i686-elf-gcc
 CXX = i686-elf-g++
 CXXFLAGS = -ffreestanding -std=c++11
 
-all: main.o vga.o
+all: kernel.o
 
-vga.o: vga.cpp
+kernel.o: $(wildcard *.cpp) $(wildcard *.h)
+	$(CXX) $(CXXFLAGS) -c kernel.cpp -o kernel.o
 
-main.o: main.cpp vga.h
+kernel_asm.o: kernel_asm.asm
+	nasm -f elf -o kernel_asm.o kernel_asm.asm
 
