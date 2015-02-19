@@ -8,6 +8,11 @@
 #include <stdbool.h> 
 #include <stdint.h>
 
+
+/** Local headers. */
 #include "util.h"
+
+/** Drivers. */
+#include "interrupt.h"
 #include "vga.h"
 

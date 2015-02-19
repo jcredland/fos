@@ -1,64 +1,22 @@
 /* Kernel. */
 
+VgaDriver vga;
+InterruptDriver interruptDriver; 
 
-
-void memset(char* dest, int ch, size_t count)
-{
-    while (count--)
-        *dest++ = ch;
-}
-
-class InterruptDriver
-{
-public:
-    InterruptDriver()
-    {
-        memset((char*)idt, 0, sizeof(idt));
-        
-        asm volatile ( "lidt (%0)" : : "p"(&idtr) );
-    }
-    void setHandler(int i, void (*handler)(void))
-    {
-        idt[i].baseLow  = (ptrdiff_t) handler & 0xFFFF;
-        idt[i].baseHi   = (ptrdiff_t) handler & 0x00FF000 >> 16;
-        idt[i].segment  = 0x10;
-        idt[i].flags    = 0x8;
-    }
-private:
-    struct Interrupt
-    {
-        uint16_t baseLow;
-        uint8_t segment;
-        uint8_t _reserved;
-        uint8_t flags;
-        uint8_t baseHi;
-    } F_PACKED_STRUCT;
-    
-    typedef void (*Handler)(void);
-    
-    
-    Handler handler[256];
-    Interrupt idt[256]; /* Align to 8 bytes. */
-    
-    struct InterruptPointer
-    {
-        uint16_t length;
-        uint32_t base;
-        /* 48 bits. */
-    } F_PACKED_STRUCT;
-    
-    InterruptPointer idtr;
-};
 
 class KeyboardDriver
 {
 public:
     KeyboardDriver()
-    {}
+    {
+        buffer[0] = 0; 
+    }
     
 private:
     char buffer[16];
 };
+
+KeyboardDriver keyboardDriver;
 
 class System
 {
@@ -68,13 +26,23 @@ class System
     }
 };
 
+extern "C"
+{
+    extern void interrupt_handler_wrap_noerr_49();
+}
+
+void interrupt_generic()
+{
+    vga.write(1, 15, "Interrupt Handler Called");
+}
+
 int main()
 {
-    VgaDriver vga;
+
     vga.write(1, 10, "Welcome to the kernel");
-    
-    for (int i = 0; i < 10; ++i)
-        vga.write("Some string..");
+
+    interruptDriver.setHandler(49, interrupt_handler_wrap_noerr_49, interrupt_generic);
+    interruptDriver.raiseInterrupt<49>();
     
     while (1)
     {}

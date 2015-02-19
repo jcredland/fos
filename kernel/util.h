@@ -5,6 +5,11 @@
 
 #define F_PACKED_STRUCT __attribute__((packed))
 
+/* Functions that absolutely must be called with CDECL calling convention. */
+#define CDECL 
+
+#define assert(x) 
+
 //typedef uint32_t size_t;
 
 static inline void outb(uint16_t port, uint8_t val)

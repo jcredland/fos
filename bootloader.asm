@@ -186,6 +186,33 @@ hang:
     mov bx, string.movingonup
     call vga_print_string
     call vga_new_line
+
+    ; Call C++ constructors
+call_ctors:
+    [extern start_ctor_sec]
+    mov ecx, [start_ctor_sec]
+    mov ebx, start_ctor_sec
+    add ebx, 4
+
+.repeat
+    call [ebx]
+    add ebx, 4
+    dec ecx
+    jnz .repeat
+
+;    [extern start_ctors]
+;    [extern end_ctors]
+;
+;    mov ebx, start_ctors
+;    jmp .testctors
+;.loopctors:
+;    call [ebx]
+;    add ebx, 4
+;;.testctors:
+;    cmp ebx, end_ctors
+;    jb .loopctors
+
+    ; Go to the C++ kernel. 
     [extern main]
     jmp main
 

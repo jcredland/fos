@@ -3,12 +3,7 @@
 class VgaDriver
 {
 public:
-    VgaDriver()
-    :
-    cursor(0)
-    {
-//        asm(".intel_syntax noprefix");
-    }
+    VgaDriver();
     
     void write(const char * string)
     {

@@ -1,1 +1,1 @@
-/usr/local/Cellar/qemu/2.1.2/bin/qemu-system-i386 fos.bin -curses
+/usr/local/Cellar/qemu/2.1.2/bin/qemu-system-i386 fos.bin $1 -no-reboot -d guest_errors,cpu_reset,int
