@@ -1,9 +1,20 @@
+; Section jump
+    section .text 
     global boot
     bits 16
+    global sectors_to_load
 
 boot:
+    jmp boot_start
+sectors_to_load:
+    dw 0
+
+    section .text2
+    extern stack_top
+
+boot_start:
 ; configure stack. Segment registers presumed to be all 0.
-    mov bp, stack.stacktop
+    mov bp, stack_top
     mov sp, bp
 ; store disk information
     mov [boot_drive], dl
@@ -50,7 +61,7 @@ bios_print_string:
 ; assumes stage 2 is immediately after the first sector.
 load_stage_2:
     mov ah, 02h
-    mov al, 20h ; number of sectors
+    mov al, 40h ; number of sectors
     mov ch, 0h ; cylinder
     mov dh, 0h ; head
     mov cl, 2h ; sector 2
@@ -133,16 +144,18 @@ boot_drive:
     db 0
 
 
-    times 510-($-$$)    db  0
+;    times 510-($-$$)    db  0
 
-    dw 0xaa55 ; magic bios number
+;    dw 0xaa55 ; magic bios number
+
+section .boot_stage2
 
 stage2_start:
-stack:
-    times 1024  db 0
-.stacktop
-    dd 0xdeadbeaf
-; -------------------------------------------------------------------------------
+;#stack:
+;#    resb 1024
+;#.stacktop
+;#    dd 0xdeadbeaf
+;; -------------------------------------------------------------------------------
 ; END BOOT LOADER
 ; -------------------------------------------------------------------------------
 main_os_code:
@@ -195,7 +208,9 @@ call_ctors:
     add ebx, 4
 
 .repeat
+    pusha
     call [ebx]
+    popa
     add ebx, 4
     dec ecx
     jnz .repeat

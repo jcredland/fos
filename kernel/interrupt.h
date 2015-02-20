@@ -6,18 +6,16 @@ void memset(char* dest, int ch, size_t count)
         *dest++ = ch;
 }
 
-class ProgrammableInterruptController
+/** Raise an interrupt manually.  Useful for testing. */
+template <int N> static inline void raiseInterrupt (void)
 {
-public:
-};
-
-class InterruptDriver;
-InterruptDriver * interruptDriverPointer = nullptr;
+    asm volatile ("int %0\n" : : "N"(N));
+}
 
 class InterruptDriver
 {
 public:
-    InterruptDriver();
+    InterruptDriver(void(*defaultHanlder)(int));
     void registerAllHandlers();
     
     enum
@@ -27,20 +25,30 @@ public:
         GATE_TYPE_TRAP_32BIT = 0xF,
         INTERRUPT_ENABLED = 0x80
     };
+
     enum
     { 
         MAX_INTERRUPT_VECTORS = 256
     };
 
-    template <int N> static inline void raiseInterrupt (void)
+    void setHandler(int interruptNumber, void(*newHandler)(int))
     {
-        asm volatile ("int %0\n" : : "N"(N));
+        handler[interruptNumber] = newHandler;
     }
-    void setHandler((*realHandler)(void))
+
+    static void enableHardwareInterrupts()
     {
+        asm volatile ( "sti" );
     }
+
+    void callHandler(uint8_t interruptNumber)
+    {
+        (*handler[interruptNumber])(interruptNumber);
+    }
+    
+private:
     /** Sets up an entry in the IDT. */
-    void setVectorStub(uint8_t interruptNumber, char *asmInterruptHanlder) 
+    void setVectorStub(uint8_t interruptNumber, char *asmInterruptHandler) 
     {
         auto & i = interruptNumber;
         assert(i > 0 && i < 256);
@@ -50,20 +58,8 @@ public:
         idt[i].segment  = 0x08;
         idt[i].flags    = INTERRUPT_TYPE_TRAP_32BIT | INTERRUPT_ENABLED;
         idt[i]._reserved = 0;
-        
-        handler[i] = realHandler;
     }
 
-    void enableInterrupts()
-    {
-        asm volatile ( "sti" );
-    }
-    void callHandler(uint8_t interruptNumber)
-    {
-        (*handler[interruptNumber])();
-    }
-    
-private:
     struct Interrupt
     {
         uint16_t baseLow;
@@ -73,8 +69,7 @@ private:
         uint16_t baseHi;
     } F_PACKED_STRUCT;
     
-    typedef void (*Handler)(void);
-    
+    typedef void (*Handler)(int);
     
     Handler handler[256];
     Interrupt idt[256]; /* Align to 8 bytes. */
@@ -89,6 +84,8 @@ private:
     InterruptPointer idtr;
 };
 
+extern InterruptDriver interruptDriver;
+
 extern "C"
 {
 /** This function is called by the interrupt handler stub when an interrupt occurs. 
@@ -97,7 +94,7 @@ extern "C"
  */
 void interrupt_handler(uint8_t interruptNumber, uint16_t errorCode)
 {
-    interruptDriverPointer->callHandler(interruptNumber);
+    interruptDriver.callHandler(interruptNumber);
 }
 }
 

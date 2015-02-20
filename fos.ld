@@ -2,20 +2,47 @@ ENTRY(main);
 SECTIONS
 {
     . = 0x7C00;
-    .boot : AT(0x7c00)
+    .boot_start : AT(0x7c00)
     {
-        bootloader.elf ( .text )
+        bootloader.elf ( .text );
+    }
+    . = 0x7c10;
+    .boot_data : 
+    {
+        kernel_length = .;
+        SHORT(_data_end - 0x7C00) ;
+    }
+    . = 0x7c20;
+    .boot  :
+    {
+        bootloader.elf ( .text2 );
+    }
+    . = 0x7dfe;
+    .magic_label :
+    {
+        SHORT(0xaa55);
+    }
+    . = 0x7e00;
+    .boot_stage2 :
+    {
+        bootloader.elf ( .boot_stage2 );
     }
     .text : ALIGN(0x1000)
     {
+        boot_post_data = . ;
         _text = .;
         *(.text);
         _text_end = .;
         . = ALIGN(4096);
     }
+    .stack : ALIGN(0x1000)
+    {
+        . = . + 0x1000;
+        stack_top = .;
+    }
     .data :
     {
-            start_ctor_sec = .;
+          start_ctor_sec = .;
          __CTOR_LIST__ = .;
           LONG((__CTOR_END__ - __CTOR_LIST__) / 4 - 2);
           *(.ctors);

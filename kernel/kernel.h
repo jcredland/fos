@@ -11,8 +11,10 @@
 
 /** Local headers. */
 #include "util.h"
+#include "kernel_string.h"
 
 /** Drivers. */
+#include "interrupt_pic.h"
 #include "interrupt.h"
 #include "vga.h"
 
