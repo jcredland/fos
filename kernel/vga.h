@@ -11,6 +11,11 @@ public:
             putc(*string++);
     }
     
+    void write(const KernelString & ks)
+    {
+        write(ks.get()); 
+    }
+    
     void putc(char c)
     {
         *(vmem + cursor * 2 + 1) = 0xF;
@@ -58,3 +63,6 @@ private:
     char * const vmem =          (char *) 0xb8000;
     uint16_t * const vmemi = (uint16_t *) 0xb8000;
 };
+
+
+extern VgaDriver vga; 

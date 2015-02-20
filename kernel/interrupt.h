@@ -36,9 +36,14 @@ public:
         handler[interruptNumber] = newHandler;
     }
 
-    static void enableHardwareInterrupts()
+    static void enable_hardware_interrupts()
     {
         asm volatile ( "sti" );
+    }
+
+    static void disable_hardware_interrupts()
+    {
+        asm volatile ( "cli" );
     }
 
     void callHandler(uint8_t interruptNumber)

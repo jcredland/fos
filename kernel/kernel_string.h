@@ -23,7 +23,7 @@ public:
         while (i--)
         {
            tb[i] = getDigit(0xF & hex); 
-           hex = hex >> 8; 
+           hex = hex >> 4; 
         }
         tb[9] = 0; 
 

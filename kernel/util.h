@@ -2,6 +2,7 @@
 #define UTIL_H21
 
 
+#define F_DECLARE_NO_COPY(ClassName) ClassName(const ClassName &) = delete; 
 
 #define F_PACKED_STRUCT __attribute__((packed))
 

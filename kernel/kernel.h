@@ -16,5 +16,9 @@
 /** Drivers. */
 #include "interrupt_pic.h"
 #include "interrupt.h"
+#include "events.h"
+#include "keyboard.h"
 #include "vga.h"
 
+/** Applications and utilities. */
+#include "event_watcher.h"
