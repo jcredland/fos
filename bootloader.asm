@@ -163,11 +163,19 @@ main_os_code:
     nop
     mov bx, str_main_os_loaded
     call bios_print_string
+    ; Query the BIOS for data while we are still in real mode. 
+    call bios_detect_ram
+
+    ; Move to protected mode. 
     jmp protected_mode_start
 
 str_main_os_loaded:
     db 'Stage 2 Loaded', 0
 
+; 16-bit includes
+%include "kernel/memory_detect_16bit.asm"
+
+;------------------------------------------------------------
 ; Entering protected mode: 
 
 protected_mode_start:
@@ -188,7 +196,6 @@ protected_mode_start:
     mov gs, ax
     mov ss, ax
 
-hang:
     call vga_clear_screen
     mov bx, string.protectedmode
     call vga_print_string
@@ -401,6 +408,7 @@ vga_update_cursor_pos:
 
     pop bx
     ret
+
 
 vgadata:
 .cursor

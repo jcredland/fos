@@ -2,50 +2,79 @@
 /** A simple string function that isn't dependent on any memory allocation being 
  * available. 
  */
-class KernelString
+class KString
 {
 public:
-    KernelString()
+    KString()
     {
         buf[0] = 0; 
         buf[MAX_STRING_LENGTH] = 0;
     }
 
-    KernelString(const char * string)
+    KString(const char * string)
     {
         copyFrom(buf, string, MAX_STRING_LENGTH);
     }
 
-    void appendHex(uint32_t hex)
+    KString(uint64_t hexNumber) : KString() { appendHex(hexNumber); }
+    KString(uint32_t hexNumber) : KString() { appendHex(hexNumber); }
+    KString(uint16_t hexNumber) : KString() { appendHex(hexNumber); }
+    KString(uint8_t  hexNumber) : KString() { appendHex(hexNumber); }
+
+    void appendHex(uint64_t hex) { appendHex(hex, 16); }
+    void appendHex(uint32_t hex) { appendHex(hex, 8); }
+    void appendHex(uint16_t hex) { appendHex(hex, 4); }
+    void appendHex(uint8_t  hex) { appendHex(hex, 2); }
+
+    void appendHex(uint64_t hex, int num_digits)
     {
-        char tb[9];
-        int i = 8; 
+        int blanks = num_digits / 4 - 1; 
+
+        if (blanks < 0) 
+            blanks = 0;
+
+        char tb[num_digits + 1 + blanks];
+
+        int i = num_digits; 
+        int string_idx = num_digits + blanks;
         while (i--)
         {
-           tb[i] = getDigit(0xF & hex); 
+           string_idx--;
+
+           tb[string_idx] = getDigit(0xF & hex); 
            hex = hex >> 4; 
+
+           if (i != 0 && (i % 4) == 0)
+               tb[--string_idx] = '_';
         }
-        tb[9] = 0; 
+        tb[num_digits + blanks] = 0; 
 
         int len = length();
         copyFrom(buf + len, tb, MAX_STRING_LENGTH - len); 
     }
 
-    KernelString(const KernelString & rhs)
+    KString(const KString & rhs)
     {
        copyFrom(buf, rhs.get(), MAX_STRING_LENGTH); 
     }
 
-    KernelString & operator+ (const KernelString & rhs)
+    KString & operator+ (const KString & rhs)
     {
         append(rhs); 
         return *this;
     }
 
+    KString & operator+= (const KString & rhs)
+    {
+        append(rhs); 
+        return *this;
+    }
+
+
     /** Get a C string array. */
     const char * get() const { return buf; }
 
-    void append(const KernelString & rhs)
+    void append(const KString & rhs)
     {
         int len = length();
         copyFrom(buf + len, rhs.get(), MAX_STRING_LENGTH - len); 

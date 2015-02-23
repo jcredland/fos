@@ -5,60 +5,27 @@ class VgaDriver
 public:
     VgaDriver();
     
-    void write(const char * string)
-    {
-        while (*string != 0)
-            putc(*string++);
-    }
+    /** Display a string and move to the next line. */
+    void writeln(const KString &);
+    void write(const char * string);
+    void write(const KString & ks);
     
-    void write(const KernelString & ks)
-    {
-        write(ks.get()); 
-    }
-    
-    void putc(char c)
-    {
-        *(vmem + cursor * 2 + 1) = 0xF;
-        *(vmem + cursor * 2) = c;
-        cursor++;
-        
-        if (cursor >= 80 * 25)
-            scrollOneLine();
-    }
-    
-    void scrollOneLine()
-    {
-        cursor -= 80;
-        
-        uint16_t * src = vmemi + 80;
-        
-        for (int i = 0; i < 80 * 24; ++i)
-            *(vmemi + i) = *(src + i);
-        
-        uint16_t * lastLine = vmemi + 80 * 24;
-        
-        for (int i = 0; i < 80; ++i)
-            *(lastLine+i) = 0;
-    }
-    
-    void updateCursorPositionFromHardware()
-    {
-        
-    }
-    
-    void write(uint8_t x, uint8_t y, const char * string)
-    {
-        uint32_t offset = x + y * 80;
-        char * v = vmem + offset * 2;
-        while (*string != (char)0)
-        {
-            *v++ = *string++;
-            *v++ = 0xF;
-        }
-    }
+    void putc(char c);
+    void write(int x, int y, const char * string);
+
+    /** Set the location of the cursor use by the write functions. */
+    void set_pos(int x, int y); 
     
 private:
+    void scroll_one_line();
+    void update_cursor_position_from_hardware();
+    int get_x() const; 
+    int get_y() const; 
+
     uint32_t cursor;
+
+    const uint32_t rows = 25;
+    const uint32_t columns = 80;
     
     char * const vmem =          (char *) 0xb8000;
     uint16_t * const vmemi = (uint16_t *) 0xb8000;

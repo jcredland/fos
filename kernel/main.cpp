@@ -2,9 +2,9 @@
 
 void default_interrupt_handler(int interruptNumber)
 {
-    KernelString message = KernelString("Unhandled interrupt ");
-    message.appendHex(interruptNumber);
-    vga.write(1, 16, message.get());
+    KString message = KString("Unhandled interrupt ");
+    message.appendHex((uint32_t) interruptNumber);
+    vga.writeln(message);
 }
 
 InterruptDriver interruptDriver(default_interrupt_handler); 
@@ -39,14 +39,14 @@ void setupInterrupts()
 
 int main()
 {
-    vga.write(1, 10, "Welcome to the kernel");
-    KernelString s; 
-    s.appendHex(0x12345678); 
-    vga.write(s.get());
+    vga.write(1, 6, "Welcome to the kernel");
+    vga.set_pos(0, 7); 
 
     setupInterrupts(); 
 
     EventWatcher event_watcher(event_queue, vga); 
+
+    pmem.print_debug(vga); 
 
     while (1)
     {
