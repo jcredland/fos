@@ -6,9 +6,10 @@
 
 boot:
     jmp boot_start
-sectors_to_load:
-    dw 0
+;sectors_to_load:
+;    dw 0
 
+    extern sectors_to_load
     section .text2
     extern stack_top
 
@@ -55,13 +56,23 @@ bios_print_string:
     pop ax
     ret 
 
+kernel_too_large:
+    mov bx, kernel_too_large_string
+    call bios_print_string
+    jmp $
+kernel_too_large_string:
+    db 'Kernel Too Large', 0
 ; ---
 ; load_stage_2
 ; call: BX memory location to load to; DL drive to load from
 ; assumes stage 2 is immediately after the first sector.
 load_stage_2:
+    mov ax, [sectors_to_load]
+    test ah, ah
+    jnz kernel_too_large
+
     mov ah, 02h
-    mov al, 40h ; number of sectors
+    ;mov al, 40h ; number of sectors
     mov ch, 0h ; cylinder
     mov dh, 0h ; head
     mov cl, 2h ; sector 2

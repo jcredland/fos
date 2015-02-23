@@ -19,7 +19,7 @@
 #include "events.h"
 #include "keyboard.h"
 #include "vga.h"
-#include "memory_detect.h"
+#include "memory_physical.h"
 
 /** Applications and utilities. */
 #include "event_watcher.h"

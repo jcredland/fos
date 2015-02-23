@@ -9,8 +9,8 @@ SECTIONS
     . = 0x7c10;
     .boot_data : 
     {
-        kernel_length = .;
-        SHORT(_data_end - 0x7C00) ;
+        sectors_to_load = .;
+        SHORT((_data_end - 0x7C00) / 512 + 1) ;
     }
     . = 0x7c20;
     .boot  :
