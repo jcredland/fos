@@ -70,13 +70,15 @@ public:
     enum class IRQ
     {
         SYSTEM_TIMER = 0,
-        KEYBOARD = 1
+        KEYBOARD = 1, 
+        ATA1 = 14
     };
 
     enum class Interrupt
     {
         SYSTEM_TIMER = 0x20,
-        KEYBOARD = 0x21
+        KEYBOARD = 0x21,
+        ATA1 = 0x2E
     };
 
     /** Reinitalizes the PIC chips with new offsets.  The new offsets are 0x20 and 0x28. 

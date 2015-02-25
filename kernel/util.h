@@ -6,6 +6,8 @@
 
 #define F_PACKED_STRUCT __attribute__((packed))
 
+#define kassert(x)
+
 /* Functions that absolutely must be called with CDECL calling convention. */
 #define CDECL 
 
@@ -20,6 +22,11 @@ static inline void outb(uint16_t port, uint8_t val)
     /* TODO: Should %1 be %w1? */
 }
 
+static inline void outl(uint16_t port, uint32_t val)
+{
+    asm volatile ( "outl %0, %1" : : "a"(val), "Nd"(port) ); 
+}
+
 static inline uint8_t inb(uint16_t port)
 {
     uint8_t ret;
@@ -27,6 +34,13 @@ static inline uint8_t inb(uint16_t port)
     /* TODO: Is it wrong to use 'N' for the port? It's not a 8-bit constant. */
     /* TODO: Should %1 be %w1? */
     return ret;
+}
+
+static inline uint32_t inl(uint16_t port)
+{
+    uint32_t ret;
+    asm volatile ( "inl %1, %0" : "=a"(ret) : "Nd"(port) ); 
+    return ret; 
 }
 
 static inline void io_wait(void)

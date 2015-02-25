@@ -1,7 +1,4 @@
-
-CC = i686-elf-gcc
-CXX = i686-elf-g++
-CXXFLAGS = -g -O0 -ffreestanding -std=c++11
+include ../Makefile.inc
 
 all: net.o
 

@@ -1,25 +1,18 @@
+#pragma once
 
-/** Standard headers. */
-#include <float.h>
-#include <limits.h>
-#include <stdarg.h>
-#include <stddef.h>
-#include <iso646.h>
-#include <stdbool.h> 
-#include <stdint.h>
-
-
-/** Local headers. */
-#include "util.h"
-#include "kernel_string.h"
+#include "std_headers.h"
 
 /** Drivers. */
 #include "interrupt_pic.h"
 #include "interrupt.h"
 #include "events.h"
 #include "keyboard.h"
-#include "vga.h"
+#include "pci_devices.h"
+#include "pci.h"
 #include "memory_physical.h"
+
+#include "disk/disk.h"
 
 /** Applications and utilities. */
 #include "event_watcher.h"
+

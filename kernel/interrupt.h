@@ -15,7 +15,7 @@ template <int N> static inline void raiseInterrupt (void)
 class InterruptDriver
 {
 public:
-    InterruptDriver(void(*defaultHanlder)(int));
+    InterruptDriver(void(*defaultHandler)(int));
     void registerAllHandlers();
     
     enum
