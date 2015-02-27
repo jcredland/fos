@@ -1,146 +1,186 @@
 
 
-/** 
+/**
+ * ATA Programmed Input Output Driver (ATA PIO).
+ *
  * This implements the slowest possible type of ATA disk driver.  But at least it'll work!
  * At some point it needs to be swapped for a DMA one, and it'd be good to get the SATA drivers
  * working as well.
  *
- * It uses Logical Block Addressing and only supports the primary IDE controller right now. 
+ * It uses Logical Block Addressing and only supports the primary IDE controller right now.
  *
  * Logical Block Addressing
  * The logical address is a 28-bit unsigned binary number, which is placed into the command block as follows:
         – bits 27–24 into the Drive/Head register bits 3–0
         – bits 23–16 into the Cylinder High register
         – bits 15–8 into the Cylinder Low register
-        – bits 7–0 into the Sector Number register 
+        – bits 7–0 into the Sector Number register
  */
-class AtaPioDriver
-:
+class ATAControllerPIO
+    :
     public StorageDriver
 {
-    public:
-        AtaPioDriver() 
+public:
+    ATAControllerPIO (bool usePrimaryController = true);
+
+    /** Load a sector of 512 (0x200) bytes. */
+    bool read (char* buffer, uint32_t logical_block_address);
+
+    /** Write a sector of 512 (0x200 bytes. */
+    bool write (char* buffer, uint32_t logical_block_address);
+
+    /** Return the number of sectors. */
+    uint32_t size()
+    {
+        return 0;
+    }
+
+private:
+    uint16 base_addr = 0x1F0;
+
+    /** Return the controllers status bits as a string for debugging. */
+    KString status_to_string (uint8 status) const;
+
+    void ata_out (uint16 port_type, uint8 value) const
+    {
+        outb (base_addr + port_type, value);
+    }
+    void ata_out_word (uint16 port_type, uint16 value) const
+    {
+        outw (base_addr + port_type, value);
+    }
+    uint8 ata_in (uint16 port_type) const
+    {
+        return inb (base_addr + port_type);
+    }
+    uint16 ata_in_word (uint16 port_type) const
+    {
+        return inw (base_addr + port_type);
+    }
+
+    /** Send software reset. */
+    void reset();
+    /*
+     * @param: drive 0 for master, 1 for slave.
+     */
+    void select (uint8 drive, uint8 head, uint16 cylinder, uint8 sector);
+    void select_logical_block (uint8 drive, uint32 address);
+    void send_command (uint8 command);
+
+    /** Read the status byte after a 400ns delay. */
+    uint8 read_status() const;
+
+    /** Check to see if we are busy. */
+    bool is_busy();
+    void wait_while_busy(); 
+    bool wait_until_ready_or_error(); 
+
+    /** Returns true if this IDE controller is detected. */
+    bool has_ide_controller();
+
+    enum RegisterOffsets
+    {
+        R_DATA = 0, R_ERROR_FEATURE = 1, R_SECTOR_COUNT = 2, R_SECTOR_NUMBER = 3,
+        R_CYLINDER_LO = 4, R_CYLINDER_HI = 5, R_LBA_LO = 3, R_LBA_MID = 4,
+        R_LBA_HI = 5, R_DRIVE_HEAD = 6, R_STATUS_COMMAND = 7, R_CONTROL_REGISTER = 0x206
+    };
+
+    enum ControlRegister
+    {
+        SRST = 0x4
+    };
+
+    /** This enum contains the commands that all ATA compatible IDE systems
+     * must implement. */
+    enum Command
+    {
+        IDENTIFY = 0xEC,
+        READ_SECTORS = 0x20,            /* Mandatory to implement in IDE: with re-try. */
+        READ_SECTORS_NO_RETRY = 0x21,   /* Mandatory to implement in IDE */
+        WRITE_SECTORS = 0x30,
+        WRITE_SECTORS_NO_RETRY = 0x31,
+        READ_SECTORS_VERIFY = 0x40,
+        READ_SECTORS_VERIFY_NO_RETRY = 0x41,
+        SEEK = 0x70                     /* Seek is defined as 0x70 - 0x7F (but why?) */
+    };
+
+    enum StatusBits
+    {
+        BUSY = 0x80,
+        RDY  = 0x40,
+        DRIVE_FAULT = 0x20,
+        DSC  = 0x10, /* drive seek complete (1 when not seeking). */
+        DRQ  = 0x8, /* data request bit, set to 1 when the drive is ready to transfer data. */
+        CORR = 0x4, /* correctable error encounter. */
+        IDX  = 0x2, /* goes to 1 once per disk revolution. */
+        ERR  = 0x1,
+    };
+
+
+    const uint16 R_ALT_STATUS = 0x3f6;
+
+
+
+    struct F_PACKED DriveData
+    {
+        uint16  general_config_info;
+        uint16  cylinders;
+        uint16  r0;
+        uint16  heads;
+        uint16  vendor_obsolete0;
+        uint16  vendor_obsolete1;
+        uint16  sectors_per_track;
+        uint16  r1;
+        uint16  r2;
+        uint16  r3;
+        char    serial[20];
+        uint16  vendor_specific0;
+        uint16  vendor_specific1;
+        uint16  ecc_bytes_on_long;
+        char    firmware_revision[8]; /* padded with spaces. */
+        char    model_number[40];
+        uint8   seagate_reserved;
+        uint8   max_sectors_per_interrupt; /* LSB TODO: is this in the right plac? */
+        uint16  can_perform_double_word_io; /* might be reserved??? */
+        uint16  capability_bits;
+        uint16  r4;
+        uint8   pio_transfer_timing_cycle;
+        uint8   r5;
+        uint8   dma_transfer_timing_cycle;
+        uint8   r6;
+        struct F_PACKED
         {
-            identify(0, master_data); 
-//            identify(1, slave_data); 
-        }
+            uint16 reserved : 15;
+            uint16 is_valid : 1;
+            uint16 current_num_cylinder;
+            uint16 current_num_heads;
+            uint16 current_num_sectors_per_track;
+        } translation_mode;
+        uint16 multiple_sectors;
+        uint32 lba_total_sectors;
+        uint16 singleword_dma_info;
+        uint16 multiword_dma_info;
+        uint16 reserved_space[64];
+        uint16 reserved_space2[128];
+    };
 
-        /** Load a sector. */
-        bool read(char * buffer, uint32_t logical_block_address) { return false; }
+    DriveData master_data;
+    DriveData slave_data;
 
-        /** Return the number of sectors. */
-        uint32_t size() { return 0; }
+    /** Runs the IDENTIFY command on a drive and fills the response
+     * data buffer (DriveData). . */
+    bool identify (uint8 drive, DriveData* drive_data_struct);
 
-    private:
-        const uint16 BASE_PRIMARY = 0x1F0;
-        enum 
-        {
-            R_DATA = 0,
-            R_ERROR_FEATURE = 1,
-            R_SECTOR_COUNT = 2,
-            R_SECTOR_NUMBER = 3,
-            R_CYLINDER_LO = 4,
-            R_CYLINDER_HI = 5,
-            R_LBA_LO = 3,
-            R_LBA_MID = 4, 
-            R_LBA_HI = 5, 
-            R_DRIVE_HEAD = 6,
-            R_STATUS_COMMAND = 7
-        };
+    /** Deals with the byte order problem in strings from the IDE controller.
+     * @param size must be even.
+     */
+    KString decode_word_string (const char* data, int size) const;
 
-        enum Command 
-        {
-            IDENTIFY = 0xEC
-        };
+    void klog_identify_info (const DriveData& d) const;
 
-        enum StatusBits
-        {
-            BUSY = 128,
-            RDY = 64,
-            DRIVE_FAULT = 32,
-            SRV = 16,
-            DRQ = 8,
-            ERR = 1,
-
-        };
-
-        const uint16 R_ALT_STATUS = 0x3f6;
-
-        void select_master() { outb(BASE_PRIMARY + R_DRIVE_HEAD, 0xA0); /* master. */ }
-        void select_slave() { outb(BASE_PRIMARY + R_DRIVE_HEAD, 0xB0); /* master. */ }
-
-        /** 
-         * @param: drive 0 for master, 1 for slave.
-         */
-        void select(uint8 drive, uint8 head, uint16 cylinder, uint8 sector)
-        {
-            kassert(head < 16 && drive < 2); 
-            outb(BASE_PRIMARY + R_DRIVE_HEAD, 0xA0 | (drive << 4) | head); 
-            outb(BASE_PRIMARY + R_SECTOR_NUMBER, sector); 
-            outb(BASE_PRIMARY + R_CYLINDER_LO, cylinder & 0xFF); 
-            outb(BASE_PRIMARY + R_CYLINDER_HI, cylinder >> 8); 
-        }
-
-        void select_logical_block(uint8 drive, uint32 address)
-        {
-            select(drive, (address >> 24) & 0xFF, (address >> 8) & 0xFFFF, address & 0xFF);
-        }
-
-        void send_command(uint8 command)
-        {
-            outb(BASE_PRIMARY + R_STATUS_COMMAND, command); 
-        }
-
-        uint8 read_status()
-        {
-            int count = 4; 
-            while (count--)
-                (void) inb(BASE_PRIMARY + R_STATUS_COMMAND); /* while away some time. */
-
-            return inb(BASE_PRIMARY + R_STATUS_COMMAND); 
-        }
-
-        bool is_busy()
-        {
-            return (read_status() & BUSY) == BUSY;
-        }
-
-        /** Tries to identify a drive. */
-        bool identify(uint8 drive, char * response_data_buffer)
-        {
-            kassert(drive < 2); 
-
-            select(drive, 0, 0, 0); 
-            send_command(Command::IDENTIFY); 
-
-            while (is_busy()) {}
-
-            if (inb(BASE_PRIMARY + R_LBA_MID) != 0 || inb(BASE_PRIMARY + R_LBA_HI) != 0)
-                return false; 
-
-            uint8 status;
-
-            do { status = read_status(); } 
-            while ((status & DRQ) == 0 && (status & ERR) == 0);
-
-            if ((status & DRQ) != 0)
-                klog(KL_DEBUG, "Found IDE"); 
-            else 
-                return false; /* No drive. */
-
-//            for (int i = 0; i < 256; ++i)
-//                response_data_buffer[i] = inb(BASE_PRIMARY + R_DATA); 
-                master_data[255] = inb(BASE_PRIMARY + R_DATA); 
-                master_data[255] = inb(BASE_PRIMARY + R_DATA); 
-
-            return true; 
-        }
-
-        char master_data[256];
-        char slave_data[256];
-
-        bool has_master;
-        bool has_slave;
+    bool has_master;
+    bool has_slave;
 };
+
 
 

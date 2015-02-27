@@ -10,7 +10,7 @@ SECTIONS
     .boot_data : 
     {
         sectors_to_load = .;
-        SHORT((_data_end - 0x7C00) / 512 + 1) ;
+        SHORT((_data_end - 0x7C00) / 512 + 10) ;
     }
     . = 0x7c20;
     .boot  :
@@ -34,11 +34,6 @@ SECTIONS
         *(.text);
         _text_end = .;
         . = ALIGN(4096);
-    }
-    .stack : ALIGN(0x1000)
-    {
-        . = . + 0x1000;
-        stack_top = .;
     }
     .data :
     {

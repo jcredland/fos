@@ -4,7 +4,8 @@ all:	fos.elf fos.sym fos.bin
 
 clean:
 	rm fos.elf fos.bin
-	rm -r *.o
+	rm -r kernel/*.o
+	rm -r kernel/*/*.o
 
 fos.elf: bootloader.asm fos.ld kernel
 	nasm -g -f elf -o bootloader.elf bootloader.asm

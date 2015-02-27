@@ -65,26 +65,26 @@ private:
         idt[i]._reserved = 0;
     }
 
-    struct Interrupt
+    struct F_PACKED Interrupt
     {
         uint16_t baseLow;
         uint16_t segment;
         uint8_t _reserved;
         uint8_t flags;
         uint16_t baseHi;
-    } F_PACKED_STRUCT;
+    };
     
     typedef void (*Handler)(int);
     
     Handler handler[256];
     Interrupt idt[256]; /* Align to 8 bytes. */
     
-    struct InterruptPointer
+    struct F_PACKED InterruptPointer
     {
         uint16_t length;
         uint32_t base;
         /* 48 bits. */
-    } F_PACKED_STRUCT;
+    };
     
     InterruptPointer idtr;
 };

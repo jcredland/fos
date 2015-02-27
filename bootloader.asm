@@ -11,11 +11,10 @@ boot:
 
     extern sectors_to_load
     section .text2
-    extern stack_top
 
 boot_start:
 ; configure stack. Segment registers presumed to be all 0.
-    mov bp, stack_top
+    mov bp, 0x7000 ; we are just putting it here - okay??
     mov sp, bp
 ; store disk information
     mov [boot_drive], dl
@@ -27,9 +26,13 @@ boot_start:
     ;cmp ax, 0 ; zero means memory wraps around ...  really we need to handle this
     ;je a20_error
 ; load stage 2
-    mov bx, stage2_start
+    mov bx, stage2_start - 0x7c00
+    mov bp, 0x7c0
+    mov es, bp
     mov dl, [boot_drive]
     call load_stage_2
+    xor bp, bp
+    mov es, bp
     jmp main_os_code
 
 a20_error:
@@ -151,6 +154,7 @@ string_loading:
 disk_error_string:
     db 'disk read error.', 0
 
+global boot_drive
 boot_drive:
     db 0
 
@@ -162,10 +166,6 @@ boot_drive:
 section .boot_stage2
 
 stage2_start:
-;#stack:
-;#    resb 1024
-;#.stacktop
-;#    dd 0xdeadbeaf
 ;; -------------------------------------------------------------------------------
 ; END BOOT LOADER
 ; -------------------------------------------------------------------------------

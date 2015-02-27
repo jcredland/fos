@@ -18,4 +18,5 @@
 
 #include "vga.h"
 #include "kernel_log.h"
+#include "timer.h"
 

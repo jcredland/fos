@@ -17,7 +17,7 @@ PhysicalMemoryManager::PhysicalMemoryManager()
     memory_allocation_size = (highest_address / PAGE_SIZE / 8) + 1; 
     uint64_t ma_upper_boundary = round_up_to_4k(memory_allocation_size); 
 
-    vga.writeln(KString("Upper Boundary:") + KString(ma_upper_boundary)); 
+//    vga.writeln(KString("Upper Boundary:") + KString(ma_upper_boundary)); 
 
     /* Find space for our memory allocations. */
     MemoryMapEntry * ptr = &ram_data; 
@@ -26,6 +26,7 @@ PhysicalMemoryManager::PhysicalMemoryManager()
     {
         uint64_t base = ptr->base_addr; 
         uint64_t len = ptr->len;
+ //       vga.writeln(KString(base) + " base");
 
         /* Best not to use memory location 0. We might want to make that invalid. */
         if (base == 0)
@@ -49,6 +50,7 @@ PhysicalMemoryManager::PhysicalMemoryManager()
 
     if (memory_allocations == nullptr)
     {
+        /* failed to find memory for the memory map! */
         vga.writeln("Serious Error"); 
         while (1) {}
     }
@@ -79,6 +81,10 @@ PhysicalMemoryManager::PhysicalMemoryManager()
 
     /* And finally reserve what we used at the start. */
     reserve_range((uintptr_t) memory_allocations, ma_upper_boundary); 
+    /* And reserve our stack. */
+    reserve_range(0x3000, 0x4000); 
+    /* @todo: And, shit, we'd better reserve the kernel space too! */
+    reserve_range(0x7000, 0x10000); 
 }
 
 uintptr_t PhysicalMemoryManager::get_highest_memory_address()

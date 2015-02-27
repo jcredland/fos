@@ -1,6 +1,6 @@
 
 /* see ACPIspec40a.pdf */
-struct MemoryMapEntry
+struct F_PACKED MemoryMapEntry
 {
     uint64_t base_addr; 
     uint64_t len; 
@@ -10,7 +10,7 @@ struct MemoryMapEntry
     unsigned AddressRangeSlowAccess : 1;
     unsigned AddressRangeErrorLog : 1; 
     unsigned : 28; /* reserved. */
-} F_PACKED_STRUCT;
+};
 
 extern uint32_t ram_data_size;
 extern MemoryMapEntry ram_data; 

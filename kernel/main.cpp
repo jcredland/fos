@@ -1,10 +1,13 @@
 /* Kernel. */
 
+Timer timer; 
+
 void default_interrupt_handler(int interruptNumber)
 {
     KString message = KString("Unhandled interrupt ");
     message.appendHex((uint32_t) interruptNumber);
     vga.writeln(message);
+    while (1) {}
 }
 
 InterruptDriver interruptDriver(default_interrupt_handler); 
@@ -13,12 +16,6 @@ void interrupt_generic(int)
 {
     vga.write(1, 15, "Interrupt Handler Called");
 }
-
-class Timer 
-{
-public:
-    uint32_t timer; 
-} timer;
 
 void interrupt_ata(int)
 {
@@ -60,7 +57,7 @@ int main()
 
     pci.search_for_devices();
 
-    AtaPioDriver ata_pio_driver;
+    ATAControllerPIO ata_pio_driver;
 
     while (1)
     {
