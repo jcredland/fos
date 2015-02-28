@@ -25,7 +25,10 @@ void interrupt_generic(int)
 
 void interrupt_ata(int)
 {
-    kdebug("interrupt: ata interrupt handler called");
+    static int notification = 0; 
+    if (notification == 0)
+        kdebug("interrupt: ata interrupt handler called");
+    notification = 1;
     Interrupt8259PIC::send_eoi(Interrupt8259PIC::IRQ::ATA1); 
 }
 
@@ -69,6 +72,20 @@ int main()
 
     /** And attach a file system to our second disk. */
     Fat16 fat_fs2(ata_drive_data, 2, 100);
+
+    /** Read the root directory of the file system. */
+
+    Fat16::Directory root_dir(fat_fs2); 
+    Fat16::DirectoryEntry entry;
+
+    kdebug("Displaying root directory"); 
+
+    while (root_dir.next(&entry) == DiskResultCode::SUCCESS)
+    {
+        KString name(entry.name, 8); 
+        kdebug(name); 
+    }
+    kdebug("done.");
 
     while (1)
     {

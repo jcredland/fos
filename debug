@@ -1,2 +1,0 @@
-/usr/local/Cellar/qemu/2.1.2/bin/qemu-system-i386 -s -S fos.bin -curses
-reset

@@ -196,7 +196,7 @@ public:
 
     bool read(char * buffer, uint32 logical_block_address) override
     {
-        controller.read(buffer, drive, logical_block_address); 
+        return controller.read(buffer, drive, logical_block_address); 
     }
 
     uint32 size() override

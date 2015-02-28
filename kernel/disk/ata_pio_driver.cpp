@@ -25,6 +25,9 @@ ATAControllerPIO::ATAControllerPIO (bool usePrimary)
 
 bool ATAControllerPIO::read (char* buffer, uint8 drive, uint32 logical_block_address)
 {
+    int retry_count = 2;
+
+retry_access:
     select_logical_block (drive, logical_block_address);
     ata_out (R_SECTOR_COUNT, 1);
     send_command (READ_SECTORS);
@@ -32,7 +35,19 @@ bool ATAControllerPIO::read (char* buffer, uint8 drive, uint32 logical_block_add
     wait_while_busy(); /* not necessary? */
 
     if (! wait_until_ready_or_error())
-        return false;
+    {
+        kdebug("ide: read error"); 
+        if (retry_count-- == 0) 
+        {
+            return false;
+        }
+        else
+        {
+            reset(); 
+            timer.delay_ms(2); 
+            goto retry_access;
+        }
+    }
 
     uint16* word_buffer = (uint16*) buffer;
 
@@ -51,7 +66,10 @@ bool ATAControllerPIO::write (char* buffer, uint8 drive, uint32 logical_block_ad
     wait_while_busy(); /* not necessary? */
 
     if (! wait_until_ready_or_error())
+    {
+        kdebug("ide: read error"); 
         return false;
+    }
 
     uint16* word_buffer = (uint16*) buffer;
 
@@ -226,17 +244,29 @@ void ATAControllerPIO::klog_identify_info (const DriveData& d) const
 
 void ATAControllerPIO::wait_while_busy()
 {
-    /* TODO - introduce some timeout. */
-    while (is_busy()) {}
+    uint64 time_target = timer.timer + 100; 
+
+    while (is_busy()) 
+    {
+        if (timer.timer > time_target)
+            return;
+    }
 }
 
 bool ATAControllerPIO::wait_until_ready_or_error()
 {
+    uint64 time_target = timer.timer + 100; 
     uint8 s; 
     do
     {
         s = read_status();
+
+        if (timer.timer > time_target)
+            return false;
+
     } while (! (bit_set(s, DRQ) || bit_set(s, ERR))); 
 
     return (! bit_set(s, ERR)); 
 }
+
+

@@ -41,7 +41,7 @@ InterruptDriver::InterruptDriver(void(*default_handler)(int))
 
     register_all_handlers();
 
-    for (int i = 0; i < MAX_INTERRUPT_VECTORS; ++i)
+    for (unsigned i = 0; i < MAX_INTERRUPT_VECTORS; ++i)
     {
         if (i < sizeof(interrupt_cpu_trap_names))
             handler[i] = interrupt_cpu_trap_handler; 

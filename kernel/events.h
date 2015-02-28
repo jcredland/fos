@@ -26,8 +26,8 @@ public:
     EventQueue()
         :
             mask(0xF),
-            next_read(0),
-            next_write(0)
+            next_write(0),
+            next_read(0)
     {}
 
     bool is_full()

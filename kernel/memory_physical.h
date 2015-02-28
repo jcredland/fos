@@ -56,7 +56,7 @@ private:
     uint64_t available_memory;
     uintptr_t highest_address;
 
-    const int NORMAL_MEMORY = 1; 
+    const unsigned NORMAL_MEMORY = 1; 
 };
 
 extern PhysicalMemoryManager pmem; 

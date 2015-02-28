@@ -105,8 +105,9 @@ public:
      */
     static void remap_interrupts() 
     {
-        uint8_t mask1 = inb(PIC1_DATA); 
-        uint8_t mask2 = inb(PIC2_DATA); 
+        /* TODO - do something with the masks? */
+//        uint8_t mask1 = inb(PIC1_DATA); 
+//        uint8_t mask2 = inb(PIC2_DATA); 
 
         const int offset1 = 0x20; 
         const int offset2 = 0x28;

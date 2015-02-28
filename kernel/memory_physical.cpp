@@ -22,7 +22,7 @@ PhysicalMemoryManager::PhysicalMemoryManager()
     /* Find space for our memory allocations. */
     MemoryMapEntry * ptr = &ram_data; 
 
-    for (int i=0; i < ram_data_size; ++i)
+    for (unsigned i=0; i < ram_data_size; ++i)
     {
         uint64_t base = ptr->base_addr; 
         uint64_t len = ptr->len;
@@ -61,14 +61,14 @@ PhysicalMemoryManager::PhysicalMemoryManager()
     /* mark up what's actually available. */
     ptr = &ram_data; 
 
-    for (int i=0; i < ram_data_size; ++i)
+    for (unsigned i=0; i < ram_data_size; ++i)
     {
         if (ptr->type == NORMAL_MEMORY)
         {
 
             uint64_t end_addr = ptr->base_addr + ptr->len; 
 
-            for (int location = ptr->base_addr; location < end_addr; location += PAGE_SIZE)
+            for (unsigned location = ptr->base_addr; location < end_addr; location += PAGE_SIZE)
                 mark_available(location / 4096); 
 
             total_memory += ptr->len; /* @todo: doesn't work if the memory table has overlaps! */
@@ -92,7 +92,7 @@ uintptr_t PhysicalMemoryManager::get_highest_memory_address()
     uint64_t himem = 0; 
 
     MemoryMapEntry * ptr = &ram_data; 
-    for (int i=0; i < ram_data_size; ++i)
+    for (unsigned i=0; i < ram_data_size; ++i)
     {
         if (ptr->type == NORMAL_MEMORY)
         {
@@ -148,10 +148,10 @@ void PhysicalMemoryManager::reserve_range(uintptr_t start, uintptr_t size)
    assert_page_boundary(start);  
    assert_page_boundary(size); 
 
-   int first_page = start / 4096; 
-   int end_page = (size + start) / 4096;
+   unsigned first_page = start / 4096; 
+   unsigned end_page = (size + start) / 4096;
 
-   for (int i = first_page; i < end_page; ++i)
+   for (unsigned i = first_page; i < end_page; ++i)
        mark_used(i); 
 }
 
@@ -161,7 +161,7 @@ void PhysicalMemoryManager::print_debug(VgaDriver & vga)
     vga.writeln(KString("Size: ") + KString(ram_data_size));
 
     MemoryMapEntry * ptr = &ram_data; 
-    for (int i=0; i < ram_data_size; ++i)
+    for (unsigned i=0; i < ram_data_size; ++i)
     {
         KString s = "base_addr="; 
         s += KString(ptr->base_addr);

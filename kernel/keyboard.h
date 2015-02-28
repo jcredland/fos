@@ -31,7 +31,7 @@ class UkKeyboardDriver
 public:
     void handle_event(const Event & e)
     {
-        Key k = convert_scan_code_to_key(e.data);
+//        Key k = convert_scan_code_to_key(e.data);
         if (e.type == Event::KEYUP)
         {
 

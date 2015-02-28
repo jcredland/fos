@@ -80,7 +80,7 @@ void VgaDriver::scroll_one_line()
     
     uint16_t * lastLine = vmemi + mem_to_move; 
     
-    for (int i = 0; i < columns; ++i)
+    for (uint16 i = 0; i < columns; ++i)
         *(lastLine+i) = 0;
 }
 

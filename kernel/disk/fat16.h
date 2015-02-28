@@ -1,36 +1,16 @@
 
-/** The most basic of file systems to get started. */
+/** The most boring of file systems to get started. But FAT16 can be 
+ * written to by MacOS so it'll be handy 
+ * for copy cross-compiled binaries and so on into the system for testing. 
+ * 
+ * Plan A - get a read-only file system working. 
+ * Plan B - make it so we can write. 
+ * Plan C - do something more futuristic. 
+ *
+ * */
 class Fat16
 {
 public:
-    struct F_PACKED BootSector
-    {
-        char    jump[3];
-        char    os_name[8];
-        /* BIOS Parameter Block */
-        uint16  bytes_per_sector;       /* 512 for compatibility. */
-        uint8   sectors_per_cluster;    /* must be 1, 2, 4 ... cluster size must not be above 32k */
-        uint16  reserved_sectors;       /* typically 1, just this sector. */
-        uint8   copies_of_fat;          /* 2 is standard. */
-        uint16  max_root_entries;       /* 512 for compatibility. */
-        uint16  number_of_sectors_small;/* 0 if more than 65535 sectors are in use. */
-
-        uint8   media_descriptor;       /* same value as the low byte in the first FAT entry */
-        uint16  sectors_per_fat;        /* size of one copy of the FAT. */
-        uint16  sectors_per_track;
-        uint16  number_of_heads;
-        uint32  hidden_sectors;         /* might be useful on partitioned disks. */
-        uint32  number_of_sectors_large;/* if used file system id in MBR needs to be 6. */
-        uint8   drive_number;
-        uint8   reserved;
-        uint8   has_extended_boot_sig;
-        uint32  volume_serial;
-        char    volume_label[11];
-        char    fs_type[8]; /* should be the string FAT16 */
-        char    bootstrap_code[448];
-        uint16  bootstrap_magic_number;
-    };
-
     /* http://www.maverick-os.dk/FileSystemFormats/FAT16_FileSystem.html
      * FILENAME AND EXTENSION
      * Shorter names must be trailing padded with 20h. The extension is 3
@@ -82,6 +62,153 @@ public:
         READ_ONLY = 0x01
     };
 
+    /** A file and all the operations that might be needed on it. 
+     *
+     * Doesn't currently support random access!
+     */ 
+    class FileBase
+    {
+        public:
+//            virtual ~FileBase() {}
+            /** Reads the next block (512 bytes) of the file.  Returns the number 
+             * of bytes actually transferred.  If it returns 0 there are no more 
+             * blocks or a negative number if an error occurred. */
+//           virtual int get_next_block(char * buffer) = 0; 
+        private:
+    };
+
+    class File
+        :
+        public FileBase
+    {
+    public:
+        File(Fat16 & file_system, const DirectoryEntry & d)
+            :
+            fs(file_system), dir_entry(d)
+        {
+            go_to_first_cluster();
+        }
+        /* Creates a null one - this will vanish after we get memory allocation sorted 
+         * in the kernel. */
+        File(Fat16 & file_system)
+            :
+                fs(file_system)
+        {}
+        int get_next_block(char * buffer);
+    private:
+        void go_to_first_cluster();
+        /** Looks in the FAT, finds the next cluster and updates the internal 
+         * pointers to be at its first sector. Returns false
+         * if there is no next cluster and we are at the end. */
+        bool go_to_next_cluster();
+
+        uint32 file_size_remaining;
+        uint16 current_cluster;
+        uint32 next_sector;
+        uint32 sector_after_cluster;
+        Fat16 & fs;
+        DirectoryEntry dir_entry;
+    };
+
+    /** The root directory in FAT16 has special handling as it isn't allocated or mapped
+     * using the File Allocation Table. */ 
+    class RootDirectoryFile
+        :
+        public FileBase
+    {
+    public:
+        RootDirectoryFile(Fat16 & file_system)
+            :
+            fs(file_system)
+        {
+            go_to_first_sector(); 
+        }
+        int get_next_block(char * buffer);
+    private:
+        void go_to_first_sector()
+        {
+            start_sector = fs.loc.root_dir_start; 
+            current_sector = start_sector; 
+            size = fs.loc.root_dir_size;
+        }
+
+        Fat16 & fs; 
+        uint16 start_sector; 
+        uint16 current_sector;
+        uint16 size; 
+    };
+
+    /** Wraps a FatFile object with methods for handling directory entries. */
+    class Directory
+    {
+    public:
+        /** Construct a FatDirectory object pointing at the root directory. */
+        Directory(Fat16 & file_system)
+            :
+            is_root(true),
+            root_dir_file(file_system),
+            dir_file(file_system),
+            pointer(0)
+        {
+            size_read = root_dir_file.get_next_block(buffer);
+        }
+
+        /** Construct a FatDirectory object for subdirectory specified by dir_entry.  */
+        Directory(Fat16 & file_system, const DirectoryEntry & dir_entry)
+            :
+            is_root(false),
+            root_dir_file(file_system),
+            dir_file(file_system, dir_entry),
+            pointer(0) 
+        {
+            size_read = dir_file.get_next_block(buffer);
+        }
+        /** Returns the next valid directory entry.  Returns a DiskError
+         * if we have reached the end. */
+        DiskResultCode next(DirectoryEntry * entry);
+
+    private:
+        bool is_root;
+
+        RootDirectoryFile root_dir_file;
+        File dir_file;
+        
+        int size_read;
+        int pointer;
+        char buffer[512];
+    };
+    
+    struct F_PACKED BootSector
+    {
+        char    jump[3];
+        char    os_name[8];
+
+        /* This next bit is called the BIOS Parameter Block */
+
+        uint16  bytes_per_sector;       /* 512 for compatibility. */
+        uint8   sectors_per_cluster;    /* must be 1, 2, 4 ... cluster size must not be above 32k */
+        uint16  reserved_sectors;       /* typically 1, just this sector. */
+        uint8   copies_of_fat;          /* 2 is standard. */
+        uint16  max_root_entries;       /* 512 for compatibility. */
+        uint16  number_of_sectors_small;/* 0 if more than 65535 sectors are in use. */
+
+        uint8   media_descriptor;       /* same value as the low byte in the first FAT entry */
+        uint16  sectors_per_fat;        /* size of one copy of the FAT. */
+        uint16  sectors_per_track;
+        uint16  number_of_heads;
+        uint32  hidden_sectors;         /* might be useful on partitioned disks. */
+        uint32  number_of_sectors_large;/* if used file system id in MBR needs to be 6. */
+        uint8   drive_number;
+        uint8   reserved;
+        uint8   has_extended_boot_sig;
+        uint32  volume_serial;
+        char    volume_label[11];
+        char    fs_type[8]; /* should be the string FAT16 */
+        char    bootstrap_code[448];
+        uint16  bootstrap_magic_number;
+    };
+
+
     /** Cconstruct a Fat16 object. */
     Fat16 (StorageDriver& device, uint32 start_block, uint32 size_in_blocks)
         :
@@ -89,16 +216,29 @@ public:
         start_block (start_block),
         size (size_in_blocks)
     {
+        kassert(sizeof(DirectoryEntry) == 32); 
+
         read_boot_sector();
 
         filesystem_is_valid = validate_boot_sector();
 
         if (is_valid())
             initalize_locations_table();
+        else 
+            kerror("fat16: file system not valid.");
     }
 
     bool is_valid() { return filesystem_is_valid; }
+
+    uint32 get_sector_for_cluster(uint32 cluster)
+    {
+        return bs.sectors_per_cluster * cluster; 
+    }
+
 private:
+    int dir_reader_pointer;
+    DirectoryEntry dir_reader_sector_cache[512 / sizeof(DirectoryEntry)];
+
     /** Clear this flag if the file system is corrupt and cannot be used in any way. */
     bool filesystem_is_valid; 
 
@@ -180,7 +320,7 @@ private:
 
         khex_dump((char *) &bs, 32); 
 
-        return assert_has_failed;
+        return ! assert_has_failed;
     }
 
     void read_boot_sector()

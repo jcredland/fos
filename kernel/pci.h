@@ -32,6 +32,7 @@ private:
         Type get_type() { return (Type) ((value & 0b110) >> 1); }
         uint32_t get_addr()
         {
+            return 0;
         }
         uint32_t value;
     };

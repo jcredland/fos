@@ -7,6 +7,13 @@ inline void memset(char* dest, int ch, size_t count)
         *dest++ = ch;
 }
 
+/** Neither fast, not checked for safety. */
+inline void memcpy(char * dest, const char * source, size_t count)
+{
+    while (count--)
+        *dest++ = *source++;
+}
+
 /** Compare two strings.  If the strings are equal return 0. */
 inline int strncmp(const char * a, const char * b, size_t count) 
 {
