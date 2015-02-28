@@ -1,5 +1,6 @@
 
 
+
 /**
  * ATA Programmed Input Output Driver (ATA PIO).
  *
@@ -17,23 +18,18 @@
         – bits 7–0 into the Sector Number register
  */
 class ATAControllerPIO
-    :
-    public StorageDriver
 {
 public:
     ATAControllerPIO (bool usePrimaryController = true);
 
     /** Load a sector of 512 (0x200) bytes. */
-    bool read (char* buffer, uint32_t logical_block_address);
+    bool read (char* buffer, uint8 drive, uint32 logical_block_address);
 
     /** Write a sector of 512 (0x200 bytes. */
-    bool write (char* buffer, uint32_t logical_block_address);
+    bool write (char* buffer, uint8 drive, uint32 logical_block_address);
 
-    /** Return the number of sectors. */
-    uint32_t size()
-    {
-        return 0;
-    }
+    /** Return the number of 512 byte sectors. */
+    uint32 size(uint8 drive) { return 0; }
 
 private:
     uint16 base_addr = 0x1F0;
@@ -124,6 +120,8 @@ private:
     struct F_PACKED DriveData
     {
         uint16  general_config_info;
+        /* Note there are some limitations on the maximum value of the cylinders field for backwards
+         * compatibility.  See ATA specification for details. */
         uint16  cylinders;
         uint16  r0;
         uint16  heads;
@@ -183,4 +181,31 @@ private:
 };
 
 
+
+/** The ATA drive manages access to a single drive in linear block addressing mode.  */
+class ATADrive
+:
+    public StorageDriver
+{
+public:
+    ATADrive(ATAControllerPIO & controller, uint8 drive)
+        :
+            controller(controller),
+            drive(drive)
+    {}
+
+    bool read(char * buffer, uint32 logical_block_address) override
+    {
+        controller.read(buffer, drive, logical_block_address); 
+    }
+
+    uint32 size() override
+    {
+        return controller.size(drive); 
+    }
+
+private:
+    ATAControllerPIO & controller;
+    uint8 drive; 
+};
 

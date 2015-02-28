@@ -2,15 +2,21 @@
 
 Timer timer; 
 
-void default_interrupt_handler(int interruptNumber)
+void halt ()
 {
-    KString message = KString("Unhandled interrupt ");
-    message.appendHex((uint32_t) interruptNumber);
-    vga.writeln(message);
+    kerror("halted"); 
     while (1) {}
 }
 
-InterruptDriver interruptDriver(default_interrupt_handler); 
+void default_interrupt_handler(int interruptNumber)
+{
+    KString message ("interrupt: unhandled interrupt ");
+    message.appendHex((uint32_t) interruptNumber);
+    kerror(message);
+    halt();
+}
+
+InterruptDriver interrupt_driver(default_interrupt_handler); 
 
 void interrupt_generic(int)
 {
@@ -19,33 +25,31 @@ void interrupt_generic(int)
 
 void interrupt_ata(int)
 {
-    vga.write(1, 15, "ATA Interrupt Handler Called");
-    Interrupt8259PIC::sendEOI(Interrupt8259PIC::IRQ::ATA1); 
+    kdebug("interrupt: ata interrupt handler called");
+    Interrupt8259PIC::send_eoi(Interrupt8259PIC::IRQ::ATA1); 
 }
 
 void interrupt_system_timer(int)
 {
     timer.timer++;
-    Interrupt8259PIC::sendEOI(Interrupt8259PIC::IRQ::SYSTEM_TIMER); 
+    Interrupt8259PIC::send_eoi(Interrupt8259PIC::IRQ::SYSTEM_TIMER); 
 }
 
 void setupInterrupts()
 {
-    Interrupt8259PIC::remapInterrupts();
+    Interrupt8259PIC::remap_interrupts();
 
-    interruptDriver.setHandler((int) Interrupt8259PIC::Interrupt::SYSTEM_TIMER, interrupt_system_timer);
-    interruptDriver.setHandler((int) Interrupt8259PIC::Interrupt::KEYBOARD, interrupt_keyboard);
-    interruptDriver.setHandler((int) Interrupt8259PIC::Interrupt::ATA1, interrupt_ata);
+    interrupt_driver.set_handler((int) Interrupt8259PIC::Interrupt::SYSTEM_TIMER, interrupt_system_timer);
+    interrupt_driver.set_handler((int) Interrupt8259PIC::Interrupt::KEYBOARD, interrupt_keyboard);
+    interrupt_driver.set_handler((int) Interrupt8259PIC::Interrupt::ATA1, interrupt_ata);
 
-    Interrupt8259PIC::enableAll(); 
+    Interrupt8259PIC::enable_all(); 
     InterruptDriver::enable_hardware_interrupts();
 }
 
 int main()
 {
-    vga.set_mode(0x17); 
-    vga.write(1, 6, "Welcome to the kernel");
-    vga.set_pos(0, 7); 
+    kdebug("Welcome to the kernel"); 
 
     setupInterrupts(); 
 
@@ -57,7 +61,14 @@ int main()
 
     pci.search_for_devices();
 
-    ATAControllerPIO ata_pio_driver;
+    /** Now we setup the disk controller and two disks. */
+    ATAControllerPIO ata_controller;
+
+    ATADrive ata_drive_kern(ata_controller, 0); 
+    ATADrive ata_drive_data(ata_controller, 1); 
+
+    /** And attach a file system to our second disk. */
+    Fat16 fat_fs2(ata_drive_data, 2, 100);
 
     while (1)
     {

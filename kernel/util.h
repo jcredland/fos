@@ -6,16 +6,13 @@
 
 #define F_PACKED __attribute__((packed))
 
+/* Returns true if the specified bit mask is set. */
 #define bit_set(x, flag) ((x & (flag)) > 0)
-
-#define kassert(x)
 
 /* Functions that absolutely must be called with CDECL calling convention. */
 #define CDECL
 
-#define assert(x)
-
-//typedef uint32_t size_t;
+#define kassert(x)  if (!(x)) kerror(KString("assert:") + KString(__PRETTY_FUNCTION__));
 
 static inline void outb (uint16_t port, uint8_t val)
 {

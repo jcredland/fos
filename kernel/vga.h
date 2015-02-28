@@ -1,9 +1,27 @@
-
-
+enum class VgaColours
+{
+    black,
+    dark_blue,
+    dark_green,
+    dark_cyan,
+    dark_red,
+    dark_magenta,
+    dark_yellow,
+    light_gray,
+    dark_gray,
+    blue,
+    green,
+    cyan,
+    red,
+    magenta,
+    yellow,
+    white
+};
 class VgaDriver
 {
 public:
     VgaDriver();
+
     
     /** Display a string and move to the next line. */
     void writeln(const KString &);
@@ -17,8 +35,12 @@ public:
     void set_pos(int x, int y); 
     /** Set the video mode.  Probably all devices don't support all modes. */
     void set_mode(uint8 new_mode); 
+
+    void set_colour(VgaColours colour); 
     
 private:
+    uint8 current_colour; 
+
     void unlock_crtc_registers();
         
     void scroll_one_line();

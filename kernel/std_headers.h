@@ -13,6 +13,7 @@
 /** Local headers. */
 #include "kernel_type.h"
 
+#include "clib.h"
 #include "util.h"
 #include "kernel_string.h"
 

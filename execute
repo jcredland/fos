@@ -1,4 +1,4 @@
 if [ "$1x" == "-dx" ] ; then
     FLAGS="-d guest_errors,cpu_reset,int"
 fi
-/usr/local/Cellar/qemu/2.1.2/bin/qemu-system-i386 fos.bin $1 -no-reboot $FLAGS -curses
+/usr/local/Cellar/qemu/2.1.2/bin/qemu-system-i386 fos.bin $1 -hdb disk2.img -no-reboot $FLAGS -curses

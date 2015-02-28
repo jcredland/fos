@@ -23,9 +23,9 @@ ATAControllerPIO::ATAControllerPIO (bool usePrimary)
     }
 }
 
-bool ATAControllerPIO::read (char* buffer, uint32 logical_block_address)
+bool ATAControllerPIO::read (char* buffer, uint8 drive, uint32 logical_block_address)
 {
-    select_logical_block (0, logical_block_address);
+    select_logical_block (drive, logical_block_address);
     ata_out (R_SECTOR_COUNT, 1);
     send_command (READ_SECTORS);
 
@@ -36,15 +36,15 @@ bool ATAControllerPIO::read (char* buffer, uint32 logical_block_address)
 
     uint16* word_buffer = (uint16*) buffer;
 
-    for (int i = 0; i < 128; ++i)
+    for (int i = 0; i < 256; ++i)
         word_buffer[i] = ata_in_word (R_DATA);
 
     return true;
 }
 
-bool ATAControllerPIO::write (char* buffer, uint32 logical_block_address)
+bool ATAControllerPIO::write (char* buffer, uint8 drive, uint32 logical_block_address)
 {
-    select_logical_block (0, logical_block_address);
+    select_logical_block (drive, logical_block_address);
     ata_out (R_SECTOR_COUNT, 1);
     send_command (WRITE_SECTORS);
     
@@ -55,7 +55,7 @@ bool ATAControllerPIO::write (char* buffer, uint32 logical_block_address)
 
     uint16* word_buffer = (uint16*) buffer;
 
-    for (int i = 0; i < 128; ++i)
+    for (int i = 0; i < 256; ++i)
         ata_out_word(R_DATA, word_buffer[i]); 
 
     return true;
@@ -63,6 +63,24 @@ bool ATAControllerPIO::write (char* buffer, uint32 logical_block_address)
 
 
 /*****/
+
+/*
+ * To use the IDENTIFY command, select a target drive by sending 0xA0 for the 
+ * master drive, or 0xB0 for the slave, to the "drive select" IO port. On the 
+ * Primary bus, this would be port 0x1F6. Then set the Sectorcount, LBAlo,
+ * LBAmid, and LBAhi IO ports to 0 (port 0x1F2 to 0x1F5). Then send the IDENTIFY
+ * command (0xEC) to the Command IO port (0x1F7). Then read the Status port
+ * (0x1F7) again. If the value read is 0, the drive does not exist. For any
+ * other value: poll the Status port (0x1F7) until bit 7 (BSY, value = 0x80)
+ * clears. Because of some ATAPI drives that do not follow spec, at this point you
+ * need to check the LBAmid and LBAhi ports (0x1F4 and 0x1F5) to see if they are
+ * non-zero. If so, the drive is not ATA, and you should stop polling. Otherwise,
+ * continue polling one of the Status ports until bit 3 (DRQ, value = 8) sets,
+ * or until bit 0 (ERR, value = 1) sets.
+ *
+ * At that point, if ERR is clear, the data is ready to read from the Data port
+ * (0x1F0). Read 256 16-bit values, and store them.
+ * */
 
 
 bool ATAControllerPIO::identify (uint8 drive, DriveData* drive_data_struct)
@@ -85,10 +103,11 @@ bool ATAControllerPIO::identify (uint8 drive, DriveData* drive_data_struct)
     if (ata_in (R_LBA_MID) != 0 || ata_in (R_LBA_HI) != 0)
         return false;
 
-    uint8 status;
+    if (read_status() == 0) 
+        return false; /* Drive not present. */
 
     if (! wait_until_ready_or_error())
-        return false; /* No drive. */
+        return false; /* Error. */
 
     for (int i = 0; i < 256; ++i)
         response_data_buffer[i] = ata_in_word (R_DATA);

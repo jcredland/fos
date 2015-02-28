@@ -1,11 +1,11 @@
 
-/** Base class for storage drivers. */
+/** Base class for block storage drivers. */
 class StorageDriver
 {
 public:
-    /** Load a sector. */
-    virtual bool read(char * buffer, uint32_t logical_block_address) = 0;
+    /** Load a sector which is always 512 bytes long. */
+    virtual bool read(char * buffer, uint32 logical_block_address) = 0;
     /** Return the number of sectors. */
-    virtual uint32_t size() = 0;
+    virtual uint32 size() = 0;
 private:
 };

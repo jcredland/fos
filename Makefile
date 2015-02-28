@@ -1,6 +1,6 @@
 KERNEL_OBJECTS=kernel/kernel.o kernel/interrupt.o kernel/kernel_asm.o kernel/net/net.o kernel/disk/disk.o
 
-all:	fos.elf fos.sym fos.bin
+all:	fos.elf fos.sym fos.bin disk2.img
 
 clean:
 	rm fos.elf fos.bin
@@ -22,4 +22,7 @@ KERNEL_DIR = kernel
 .PHONY: kernel
 kernel:
 	       $(MAKE) -C $(KERNEL_DIR)
+
+disk2.img: disk2.dmg
+	hdiutil convert disk2.dmg -format RdWr -o disk2.img
 

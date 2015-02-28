@@ -20,6 +20,6 @@ void interrupt_keyboard(int)
 
     event_queue.add(e); 
 
-    Interrupt8259PIC::sendEOI(Interrupt8259PIC::IRQ::KEYBOARD); 
+    Interrupt8259PIC::send_eoi(Interrupt8259PIC::IRQ::KEYBOARD); 
 }
 

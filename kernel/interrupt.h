@@ -1,11 +1,4 @@
 
-
-void memset(char* dest, int ch, size_t count)
-{
-    while (count--)
-        *dest++ = ch;
-}
-
 /** Raise an interrupt manually.  Useful for testing. */
 template <int N> static inline void raiseInterrupt (void)
 {
@@ -15,8 +8,7 @@ template <int N> static inline void raiseInterrupt (void)
 class InterruptDriver
 {
 public:
-    InterruptDriver(void(*defaultHandler)(int));
-    void registerAllHandlers();
+    InterruptDriver(void(*default_handler)(int));
     
     enum
     {
@@ -31,7 +23,7 @@ public:
         MAX_INTERRUPT_VECTORS = 256
     };
 
-    void setHandler(int interruptNumber, void(*newHandler)(int))
+    void set_handler(int interruptNumber, void(*newHandler)(int))
     {
         handler[interruptNumber] = newHandler;
     }
@@ -46,17 +38,18 @@ public:
         asm volatile ( "cli" );
     }
 
-    void callHandler(uint8_t interruptNumber)
+    void call_handler(uint8_t interruptNumber)
     {
         (*handler[interruptNumber])(interruptNumber);
     }
     
 private:
+    void register_all_handlers();
     /** Sets up an entry in the IDT. */
-    void setVectorStub(uint8_t interruptNumber, char *asmInterruptHandler) 
+    void set_vector_stub(uint8_t interruptNumber, char *asmInterruptHandler) 
     {
         auto & i = interruptNumber;
-        assert(i > 0 && i < 256);
+        kassert(i > 0 && i < 256);
         
         idt[i].baseLow  = (ptrdiff_t) asmInterruptHandler & 0xFFFF;
         idt[i].baseHi   = ((ptrdiff_t) asmInterruptHandler >> 16) & 0xFF;
@@ -89,7 +82,7 @@ private:
     InterruptPointer idtr;
 };
 
-extern InterruptDriver interruptDriver;
+extern InterruptDriver interrupt_driver;
 
 extern "C"
 {
@@ -99,7 +92,7 @@ extern "C"
  */
 void interrupt_handler(uint8_t interruptNumber, uint16_t errorCode)
 {
-    interruptDriver.callHandler(interruptNumber);
+    interrupt_driver.call_handler(interruptNumber);
 }
 }
 

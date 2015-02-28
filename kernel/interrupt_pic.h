@@ -55,13 +55,13 @@ public:
      *
      * (The A0 bit is set by using the _DATA register which as a 1 in the address 0 line). 
      * */
-    static void disableAll()
+    static void disable_all()
     {
         outb(PIC1_DATA, 0xff); 
         outb(PIC2_DATA, 0xff); 
     }
 
-    static void enableAll()
+    static void enable_all()
     {
         outb(PIC1_DATA, 0x00); 
         outb(PIC2_DATA, 0x00); 
@@ -103,7 +103,7 @@ public:
      * 0x2F - IRQ15 ATA controller 2
      *
      */
-    static void remapInterrupts() 
+    static void remap_interrupts() 
     {
         uint8_t mask1 = inb(PIC1_DATA); 
         uint8_t mask2 = inb(PIC2_DATA); 
@@ -113,20 +113,20 @@ public:
 
         /* Putting the PIC into initalization mode makes it wait for three
          * more data bytes, ICW1, 3 and 4. */
-        sendAndWait(PIC1_COMMAND, ICW1::INIT | ICW1::USE_ICW4);
-        sendAndWait(PIC2_COMMAND, ICW1::INIT | ICW1::USE_ICW4);
+        send_and_wait(PIC1_COMMAND, ICW1::INIT | ICW1::USE_ICW4);
+        send_and_wait(PIC2_COMMAND, ICW1::INIT | ICW1::USE_ICW4);
        
-        sendAndWait(PIC1_DATA, offset1);
-        sendAndWait(PIC2_DATA, offset2); 
+        send_and_wait(PIC1_DATA, offset1);
+        send_and_wait(PIC2_DATA, offset2); 
         
-        sendAndWait(PIC1_DATA, 0x4); /* look out for a slave */
-        sendAndWait(PIC2_DATA, 0x2); /* Slave id. */
+        send_and_wait(PIC1_DATA, 0x4); /* look out for a slave */
+        send_and_wait(PIC2_DATA, 0x2); /* Slave id. */
         
-        sendAndWait(PIC1_DATA, ICW4::MODE_8086);
-        sendAndWait(PIC2_DATA, ICW4::MODE_8086); 
+        send_and_wait(PIC1_DATA, ICW4::MODE_8086);
+        send_and_wait(PIC2_DATA, ICW4::MODE_8086); 
     }
 
-    static void sendEOI(IRQ irq)
+    static void send_eoi(IRQ irq)
     {
         if ((int) irq >= 8) 
             outb(PIC2_COMMAND, EndOfInterrupt);
@@ -135,7 +135,7 @@ public:
     }
 
 private:
-    static void sendAndWait(uint16_t port, uint8_t byte)
+    static void send_and_wait(uint16_t port, uint8_t byte)
     {
         outb(port, byte); 
         io_wait(); 

@@ -52,7 +52,7 @@ void VgaDriver::write(const KString & ks)
 
 void VgaDriver::putc(char c)
 {
-    *(vmem + cursor * 2 + 1) = 0xF;
+    *(vmem + cursor * 2 + 1) = current_colour;
     *(vmem + cursor * 2) = c;
     cursor++;
     
@@ -136,6 +136,11 @@ void VgaDriver::write(int x, int y, const char * string)
         *v++ = *string++;
         *v++ = 0xF;
     }
+}
+
+void VgaDriver::set_colour(VgaColours colour)
+{
+    current_colour = (uint8) colour; 
 }
 
 
