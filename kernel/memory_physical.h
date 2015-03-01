@@ -39,6 +39,9 @@ public:
     void free_page(void * pointer);
 
 private:
+    /** Looks inside a byte for length_required free bits.  If found returns
+     * the index of the lowest cleared bit.  If not found returns -1. */
+    int get_index_of_continuous_clear_bits(unsigned char byte, unsigned length_required);
     void reserve_range(uintptr_t start, uintptr_t size); 
     uintptr_t round_up_to_4k(uintptr_t address);
     int get_page_number_greater_or_equal(uint64_t address);
@@ -58,7 +61,7 @@ private:
      * 1 means the page is in use. */
     /* @todo: only reserves enough for 1 gig. */
     char * memory_allocations;
-    int memory_allocation_size; 
+    unsigned memory_allocation_size; 
 
     uint64_t total_memory; 
     uint64_t available_memory;

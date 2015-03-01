@@ -76,4 +76,34 @@ static inline uint64_t rdtsc()
     return ret;
 }
 
+/*
+ * Inline assembler - %0, %1 refer to register in order they are assigned to variables. 
+ * asm ("...." : outputs : inputs : clobbered); 
+ */
+
+/** Returns the index of the least significant bit that's set. Undefined 
+ * result if value is 0. It's important to get the right bit length. 
+ *
+ * For any odd input this returns 0, because the first bit will be set. An
+ * input of 0x8000 returns 15. 
+ */
+static inline uint32_t bit_scan_forward_32(uint32_t value)
+{
+    uint32_t ret; 
+    asm volatile ("bsf %1, %0" : "=r" (ret) : "mr" (value)); 
+    return ret; 
+}
+
+/** 
+ * Returns the index of the most significant bit that's set. See bit scan forward.
+ *
+ * For an input of 0x8000 returns 15. 
+ */
+static inline uint32_t bit_scan_reverse_32(uint32_t value)
+{
+    uint32_t ret; 
+    asm volatile ("bsr %1, %0" : "=r" (ret) : "mr" (value)); 
+    return ret; 
+}
+
 

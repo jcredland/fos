@@ -10,6 +10,7 @@
 #include "pci_devices.h"
 #include "pci.h"
 #include "memory_physical.h"
+#include "memory_kmalloc.h"
 
 #include "disk/disk.h"
 

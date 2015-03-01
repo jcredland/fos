@@ -120,58 +120,94 @@ void PhysicalMemoryManager::mark_used(int page_number)
     memory_allocations[index] = memory_allocations[index] | (1 << bit); 
 }
 
-void * get_multiple_4k_pages(unsigned num_pages_required)
+void * PhysicalMemoryManager::get_multiple_4k_pages(unsigned num_pages_required)
 {
     /* So, we:
      * - search for the correct number of available bits. 
      * - translate the first bit position to a pointer. 
      * - return the pointer.
      */
-    bool in_possible_space = false;
     unsigned num_pages_found = 0; 
     unsigned possible_first_page;
-    for (int i = 0; i < memory_allocation_size; ++i)
+    
+//    for (int i = 0; i < memory_allocation_size; ++i)
+
+    unsigned mem_table_index = 0;
+    while (num_pages_found < num_pages_required)
     {
-        if (in_possible_space)
+        if (mem_table_index >= memory_allocation_size)
         {
-            unsigned char m = memory_allocations[i];
-            if (m == 0)
+            kerror("physical mem: allocation failed, not enough free space"); 
+            return nullptr;
+        }
+
+        unsigned char mem_table_entry = memory_allocations[mem_table_index];
+
+        if (num_pages_found > 0)
+        {
+            if (mem_table_entry == 0)
             {
                 num_pages_found += 8;
             }
             else
             {
-                unsigned n = get_number_of_low_empty_bits(m); 
-                num_pages_found += n;
-                
-                /* now we need to see if we have enough space, or reset everything. */
+                num_pages_found += bit_scan_forward_32(mem_table_entry) + 1; /* find as many free bits as we can. */
+
                 if (num_pages_found < num_pages_required)
-                    in_possible_space = false; 
+                    num_pages_found = 0; 
             }
         }
         else
         {
-            num_pages_found = get_number_of_high_empty_bits(memory_allocations[i]);
-            if (num_pages_found != 0)
+            if (num_pages_required < 8) /* It might fit inside a byte. */
             {
-                in_possible_space = true;
-                possible_first_page = (i * 8) + num_pages_found;
+                int index_of_free_space = get_index_of_continuous_clear_bits(mem_table_entry, num_pages_required);  /* -1 on not found. */
+
+                if (index_of_free_space >= 0)
+                {
+                    possible_first_page = (mem_table_index * 8) + index_of_free_space;
+                    num_pages_found = num_pages_required; 
+                    break;
+                }
             }
-             
+
+            if (mem_table_entry == 0)
+                num_pages_found = 8;
+            else
+                num_pages_found = 7 - bit_scan_reverse_32(memory_allocations[mem_table_index]);
+
+            if (num_pages_found != 0)
+                possible_first_page = (mem_table_index * 8) + num_pages_found;
         }
-        if (in_possible_space && num_pages_found >= num_pages_required)
-        {
-            /* Success. */
-            intptr_t p = PAGE_SIZE * possible_first_page;
-            /* TODO - mark pages as used. */
-            ERROR NOT FINISHED
-            return (void *) p; 
-        }
+
+        mem_table_index++;
     }
 
-    return nullptr;
+    intptr_t p = PAGE_SIZE * possible_first_page;
+    reserve_range(p, p + num_pages_required * PAGE_SIZE); 
+    return (void *) p; 
 }
 
+int PhysicalMemoryManager::get_index_of_continuous_clear_bits(unsigned char byte, 
+                                                              unsigned length_required)
+{
+    unsigned bits_found = 0;
+    for (int i = 0; i < 8; ++i)
+    {
+        unsigned bit = byte & 0x1;
+
+        if (bit == 0)
+            bits_found++;
+        else 
+            bits_found = 0; 
+
+        if (bits_found == length_required)
+            return (i - length_required + 1);
+
+        byte = byte >> 1; 
+    }
+    return -1;
+}
 uintptr_t PhysicalMemoryManager::round_up_to_4k(uintptr_t  addr)
 {
     uintptr_t a = addr & 0xFFF; 
