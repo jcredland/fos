@@ -18,7 +18,8 @@ public:
 
     /** Copy at most maxLength characters from a buffer string to the KString.
      * If the limit is reached before a null terminating character then a null
-     * terminating character will be added. */
+     * terminating character will be added. 
+     * */
     KString (const char* string, int maxLength)
     {
         if (maxLength < MAX_STRING_LENGTH)
@@ -134,6 +135,31 @@ public:
     {
         int len = length();
         copyFrom (buf + len, rhs.get(), MAX_STRING_LENGTH - len);
+    }
+
+    /** Removes white-space characters from the end of the string. */
+    void trim_end()
+    {
+        int len = length();
+        
+        if (len == 0)
+            return;
+        
+        char * p = buf + len - 1;
+        
+        while (is_whitespace(*p))
+        {
+            *p = 0;
+            
+            if (p == buf)
+                break;
+            
+            p--;
+        }
+    }
+    static bool is_whitespace(char c)
+    {
+        return c == ' ' || c == '\t';
     }
 
     enum { MAX_STRING_LENGTH = 200 };

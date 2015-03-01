@@ -61,7 +61,6 @@ int main()
     pmem.print_debug(vga); 
 
     PciBus pci;
-
     pci.search_for_devices();
 
     /** Now we setup the disk controller and two disks. */
@@ -74,7 +73,6 @@ int main()
     Fat16 fat_fs2(ata_drive_data, 2, 100);
 
     /** Read the root directory of the file system. */
-
     Fat16::Directory root_dir(fat_fs2); 
     Fat16::DirectoryEntry entry;
 
@@ -83,7 +81,7 @@ int main()
     while (root_dir.next(&entry) == DiskResultCode::SUCCESS)
     {
         KString name(entry.name, 8); 
-        kdebug(name); 
+        kdebug(KString("name:") + name + KString("<:")); 
     }
     kdebug("done.");
 

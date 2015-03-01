@@ -17,8 +17,6 @@ PhysicalMemoryManager::PhysicalMemoryManager()
     memory_allocation_size = (highest_address / PAGE_SIZE / 8) + 1; 
     uint64_t ma_upper_boundary = round_up_to_4k(memory_allocation_size); 
 
-//    vga.writeln(KString("Upper Boundary:") + KString(ma_upper_boundary)); 
-
     /* Find space for our memory allocations. */
     MemoryMapEntry * ptr = &ram_data; 
 
@@ -26,7 +24,6 @@ PhysicalMemoryManager::PhysicalMemoryManager()
     {
         uint64_t base = ptr->base_addr; 
         uint64_t len = ptr->len;
- //       vga.writeln(KString(base) + " base");
 
         /* Best not to use memory location 0. We might want to make that invalid. */
         if (base == 0)
@@ -121,6 +118,58 @@ void PhysicalMemoryManager::mark_used(int page_number)
     int index = page_number / 8; 
     int bit = page_number % 8;
     memory_allocations[index] = memory_allocations[index] | (1 << bit); 
+}
+
+void * get_multiple_4k_pages(unsigned num_pages_required)
+{
+    /* So, we:
+     * - search for the correct number of available bits. 
+     * - translate the first bit position to a pointer. 
+     * - return the pointer.
+     */
+    bool in_possible_space = false;
+    unsigned num_pages_found = 0; 
+    unsigned possible_first_page;
+    for (int i = 0; i < memory_allocation_size; ++i)
+    {
+        if (in_possible_space)
+        {
+            unsigned char m = memory_allocations[i];
+            if (m == 0)
+            {
+                num_pages_found += 8;
+            }
+            else
+            {
+                unsigned n = get_number_of_low_empty_bits(m); 
+                num_pages_found += n;
+                
+                /* now we need to see if we have enough space, or reset everything. */
+                if (num_pages_found < num_pages_required)
+                    in_possible_space = false; 
+            }
+        }
+        else
+        {
+            num_pages_found = get_number_of_high_empty_bits(memory_allocations[i]);
+            if (num_pages_found != 0)
+            {
+                in_possible_space = true;
+                possible_first_page = (i * 8) + num_pages_found;
+            }
+             
+        }
+        if (in_possible_space && num_pages_found >= num_pages_required)
+        {
+            /* Success. */
+            intptr_t p = PAGE_SIZE * possible_first_page;
+            /* TODO - mark pages as used. */
+            ERROR NOT FINISHED
+            return (void *) p; 
+        }
+    }
+
+    return nullptr;
 }
 
 uintptr_t PhysicalMemoryManager::round_up_to_4k(uintptr_t  addr)

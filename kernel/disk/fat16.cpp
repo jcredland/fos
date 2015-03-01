@@ -1,4 +1,8 @@
 
+#include "../error_codes.h"
+/************************************************************/
+
+/************************************************************/
 
 int Fat16::RootDirectoryFile::get_next_block(char * buffer)
 {
@@ -7,37 +11,52 @@ int Fat16::RootDirectoryFile::get_next_block(char * buffer)
 
     bool success = fs.device.read(buffer, current_sector++); 
 
-    static int debug_flag = 0; 
-
     if (! success)
         return (int) DiskResultCode::DISK_ERROR;
 
     return 512;
 }
 
+bool Fat16::Directory::get_next_block()
+{
+    int bytes_read; 
+
+    if (is_root)
+        bytes_read = root_dir_file.get_next_block(buffer);
+    else
+        bytes_read = dir_file.get_next_block(buffer); 
+
+    if (bytes_read != 512) 
+        return false;
+
+    pointer = 0; 
+
+    return true;
+}
+
+
 DiskResultCode Fat16::Directory::next(DirectoryEntry * entry)
 {
+    DirectoryEntry * e;
+
     do 
     {
-        if (pointer >= 512)
-        {
-            int bytes_read; 
+        /* Detect end-of-directory conditions. 
+         * - no more directory, or filename
+         *   starts with a zero. */
+        if (pointer >= 512 && (! get_next_block()))
+            return DiskResultCode::END_OF_FILE; 
 
-            if (is_root)
-                bytes_read = root_dir_file.get_next_block(buffer);
-            else
-                bytes_read = dir_file.get_next_block(buffer); 
+        e = (DirectoryEntry *) &buffer[pointer];
 
-            if (bytes_read != 512) 
-                return DiskResultCode::DISK_ERROR; 
+        if (e->is_last_entry())
+            return DiskResultCode::END_OF_FILE;
 
-            pointer = 0; 
-        }
-
-        *entry =  * ((DirectoryEntry *) &buffer[pointer]);
         pointer += sizeof(DirectoryEntry); 
 
-    } while ((*entry).name[0] == 0); 
+    } while ( (e->is_volume()) || (e->is_free()));
+
+    *entry = *e;
 
     return DiskResultCode::SUCCESS;
 }
@@ -45,9 +64,12 @@ DiskResultCode Fat16::Directory::next(DirectoryEntry * entry)
 
 int Fat16::File::get_next_block(char * buffer)
 {
-    if (file_size_remaining == 0)
+    bool is_directory = dir_entry.is_dir(); 
+
+    if (file_size_remaining == 0 && ! is_directory)
         return 0; 
 
+    kdebug(KString("get_next_block - reading next sector ") + KString(next_sector)); 
     fs.device.read(buffer, next_sector);
 
     bool more_data_available = true;
@@ -55,23 +77,30 @@ int Fat16::File::get_next_block(char * buffer)
     if (++next_sector >= sector_after_cluster)
         more_data_available = go_to_next_cluster();
 
-    if (file_size_remaining > 512)
+    if (is_directory)
     {
-        file_size_remaining -= 512; 
-
-        if (! more_data_available)
-            kerror("fat16: fat or directory corruption (1)"); 
-
         return 512; 
-    }
-    else
+    } 
+    else 
     {
-        if (more_data_available)
-            kerror("fat16: fat or directory corruption (2)"); 
+        if (file_size_remaining > 512)
+        {
+            file_size_remaining -= 512; 
 
-        uint32 fs = file_size_remaining;
-        file_size_remaining = 0; 
-        return fs;
+            if (! more_data_available)
+                kerror("fat16: fat or directory corruption (1)"); 
+
+            return 512; 
+        }
+        else
+        {
+            if (more_data_available)
+                kerror("fat16: fat or directory corruption (2)"); 
+
+            uint32 fs = file_size_remaining;
+            file_size_remaining = 0; 
+            return fs;
+        }
     }
 }
 
@@ -86,6 +115,7 @@ void Fat16::File::go_to_first_cluster()
 
 bool Fat16::File::go_to_next_cluster()
 {
+    kdebug("go_to_next_cluster()"); 
     uint16 fat_offset = current_cluster * 2; 
     uint16 fat_sector = fs.loc.fat_region_start + (fat_offset / 512);
     uint16 index_into_sector = fat_offset % 512; 

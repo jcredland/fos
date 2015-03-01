@@ -37,6 +37,8 @@ inline void khex_dump (const char* buffer, uint16 bytes_to_show)
 
         ++buffer; 
     }
+    if (counter != 16)
+        vga.writeln("");
 }
 
 

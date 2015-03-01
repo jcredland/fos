@@ -1,6 +1,4 @@
-#ifndef UTIL_H_21
-#define UTIL_H21
-
+#pragma once
 
 #define F_DECLARE_NO_COPY(ClassName) ClassName(const ClassName &) = delete;
 
@@ -78,5 +76,4 @@ static inline uint64_t rdtsc()
     return ret;
 }
 
-#endif
 

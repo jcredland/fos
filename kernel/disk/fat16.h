@@ -48,7 +48,41 @@ public:
         uint16  modification_date;
         uint16  first_cluster;
         uint32  size;
+
+        /* Some basic tests. */
+        bool is_volume() const { return (attrib & VOLUME) != 0; }
+        bool is_dir() const { return (attrib & DIRECTORY) != 0; }
+        bool is_free() const { return ((unsigned char) name[0] == 0xE5) || (name[0] == '\0'); }
+        bool is_last_entry() const { return name[0] == '\0'; }
+        
+        KString get_full_name()
+        {
+            KString r(name, 8);
+            r.trim_end();
+            KString r_ext(extension, 3);
+            r_ext.trim_end();
+            if (r_ext.length() > 0)
+            {
+                r.append_char('.');
+                r.append(r_ext);
+            }
+            return r;
+        }
+        
+        KString get_attrib_string()
+        {
+            KString r;
+            if (attrib & ARCHIVE) r.append_char('A');
+            if (attrib & DIRECTORY) r.append_char('D');
+            if (attrib & VOLUME) r.append_char('V');
+            if (attrib & SYSTEM) r.append_char('S');
+            if (attrib & HIDDEN) r.append_char('H');
+            if (attrib & READ_ONLY) r.append_char('R');
+            return r;
+        }
+        
     };
+
 
     enum Attribute
     {
@@ -59,27 +93,12 @@ public:
         VOLUME = 0x08,
         SYSTEM = 0x04,
         HIDDEN = 0x02,
-        READ_ONLY = 0x01
+        READ_ONLY = 0x01,
+        LONG_FILE_NAME = 0x0f
     };
 
-    /** A file and all the operations that might be needed on it. 
-     *
-     * Doesn't currently support random access!
-     */ 
-    class FileBase
-    {
-        public:
-//            virtual ~FileBase() {}
-            /** Reads the next block (512 bytes) of the file.  Returns the number 
-             * of bytes actually transferred.  If it returns 0 there are no more 
-             * blocks or a negative number if an error occurred. */
-//           virtual int get_next_block(char * buffer) = 0; 
-        private:
-    };
-
+    /** File objects read files mapped using the File Allocation Table. */
     class File
-        :
-        public FileBase
     {
     public:
         File(Fat16 & file_system, const DirectoryEntry & d)
@@ -94,8 +113,12 @@ public:
             :
                 fs(file_system)
         {}
+        /** Reads the next block (512 bytes) of the file.  Returns the number 
+         * of bytes actually transferred.  If it returns 0 there are no more 
+         * blocks or a negative number if an error occurred. */
         int get_next_block(char * buffer);
     private:
+        /** Finds the first sector. */
         void go_to_first_cluster();
         /** Looks in the FAT, finds the next cluster and updates the internal 
          * pointers to be at its first sector. Returns false
@@ -106,6 +129,7 @@ public:
         uint16 current_cluster;
         uint32 next_sector;
         uint32 sector_after_cluster;
+
         Fat16 & fs;
         DirectoryEntry dir_entry;
     };
@@ -113,8 +137,6 @@ public:
     /** The root directory in FAT16 has special handling as it isn't allocated or mapped
      * using the File Allocation Table. */ 
     class RootDirectoryFile
-        :
-        public FileBase
     {
     public:
         RootDirectoryFile(Fat16 & file_system)
@@ -168,6 +190,7 @@ public:
         DiskResultCode next(DirectoryEntry * entry);
 
     private:
+        bool get_next_block();
         bool is_root;
 
         RootDirectoryFile root_dir_file;
@@ -232,7 +255,8 @@ public:
 
     uint32 get_sector_for_cluster(uint32 cluster)
     {
-        return bs.sectors_per_cluster * cluster; 
+        /* What's this minus 2 for? */
+        return bs.sectors_per_cluster * (cluster - 2) + loc.data_start; 
     }
 
 private:

@@ -25,7 +25,15 @@ public:
 
     /** Allocate page requests a 4kb RAM page.  
      * A nullptr return suggests that the memory couldn't be found. */
-    void * get_page();
+    void * get_4k_page();
+
+    /** Allocate multiple pages from a contiguous block of memory. If 
+     * the number of pages requested couldn't be allocated then this 
+     * returns nullptr. 
+     */
+    void * get_multiple_4k_pages(unsigned number_of_pages_wanted);
+    void free_multiple_4k_pages(void * pointer, unsigned number_of_pages_to_free); 
+
     /** Free up some memory pages previously allocated with allocate_page. 
      */
     void free_page(void * pointer);
