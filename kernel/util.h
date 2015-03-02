@@ -10,7 +10,7 @@
 /* Functions that absolutely must be called with CDECL calling convention. */
 #define CDECL
 
-#define kassert(x)  if (!(x)) kerror(KString("assert:") + KString(__PRETTY_FUNCTION__));
+#define kassert(x)  if (!(x)) kerror("assertation failure: " + KString(__PRETTY_FUNCTION__));
 
 static inline void outb (uint16_t port, uint8_t val)
 {

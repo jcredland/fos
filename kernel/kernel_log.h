@@ -13,13 +13,13 @@ inline void klog (KLogLevel level, const KString& log)
 
 inline void kdebug (const KString& log)
 {
-    vga.set_colour (VgaColours::light_gray);
+    vga.set_colour (VgaColours::blue);
     klog (KL_DEBUG, log);
 }
 
 inline void kerror (const KString& log)
 {
-    vga.set_colour (VgaColours::yellow);
+    vga.set_colour (VgaColours::white);
     klog (KL_ERROR, log);
 }
 

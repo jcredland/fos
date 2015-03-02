@@ -17,6 +17,7 @@
 #include "clib.h"
 #include "util.h"
 #include "kernel_string.h"
+#include "random.h"
 
 #ifdef FOS_MOCK
 /* Fake drivers. */

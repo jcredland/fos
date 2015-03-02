@@ -38,6 +38,7 @@ public:
      * */
     void * malloc(size_t size_required)
     {
+        kassert(size_required > 0); 
         /* Fix up the size we need to include an aligned header and 
          * ensure that the block ends on an aligned boundary. */
         size_required += block_header_size;
@@ -87,11 +88,11 @@ public:
         if (address_to_free == nullptr)
             return;
 
-        BlockHeader * header = static_cast<uintptr_t>(address_to_free) - block_header_size;
+        BlockHeader * header = (BlockHeader *)(reinterpret_cast<uintptr_t>(address_to_free) - block_header_size);
         /* Save the size as we will overwrite the BlockHeader with a new FreeListNode. */
         size_t size_of_block = header->size_including_header;
 
-        if (header->canary_flog != kCanaryFlagValue)
+        if (header->canary_flag != kCanaryFlagValue)
             kerror("free: invalid canary flag.  programming error."); 
 
         /* Find a location in the free list where we should insert this block. We keep the 
@@ -99,14 +100,14 @@ public:
         FreeListNode * node = free_list_start;
         FreeListNode * previous_node = nullptr;
 
-        while ((node < header) && (node != nullptr))
+        while ((node < (FreeListNode *)header) && (node != nullptr))
         {
             previous_node = node;
             node = node->next;
         }
 
         /* Insert the block. */
-        FreeListNode * new_node = header; 
+        FreeListNode * new_node = reinterpret_cast<FreeListNode*>(header); 
         new_node->size = size_of_block;
         new_node->next = node;
 
@@ -117,9 +118,64 @@ public:
 
         /* Collapse neighbouring blocks on the free list. This can be optimised 
          * later by not writing the original block. TODO!! */
+
+        if (node != nullptr) 
+        {
+            /* Collapse upward. */
+            if (uintptr_t(new_node) + new_node->size == (uintptr_t) node)
+            {
+                new_node->size += node->size;
+                new_node->next = node->next;
+            }
+        }
+        if (previous_node != nullptr)
+        {
+            /* Collapse downward. */
+            if (uintptr_t(previous_node) + previous_node->size == (uintptr_t) new_node)
+            {
+                previous_node->size += new_node->size;
+                previous_node->next = new_node->next;
+            }
+        }
     }
 
-    size_t size_free();
+    /** Returns the total amount of free space.  This is not necessarily in a nice
+     * continuous block, so memory allocations less than this amount are still likely
+     * to fail.  But it may be useful for debugging.  It's also not terribly fast. 
+     * @see size_largest_free_block */
+    size_t size_free()
+    {
+        FreeListNode * n = free_list_start;
+        size_t space_free = 0; 
+
+        while (n != nullptr)
+        {
+            space_free += n->size;
+            n = n->next;
+        }
+        return space_free;
+    }
+
+    size_t size_largest_free_block()
+    {
+        FreeListNode * n = free_list_start;
+        size_t largest_block = 0;
+
+        while (n != nullptr)
+        {
+            if (n->size > largest_block)
+                largest_block = n->size;
+            n = n->next;
+        }
+        return largest_block;
+    }
+
+    void kprint_debug()
+    {
+        kdebug("kmalloc: largest free block " + KString(size_largest_free_block()));
+        kdebug("kmalloc: total free space " + KString(size_free()));
+    };
+
 private:
     struct FreeListNode
     {
@@ -151,22 +207,48 @@ private:
 };
 
 
+/** What do we need to test.  
+ * - Blocks do not overlap and are the size requested. 
+ * - Blocks are properly freed. 
+ * - Some view on the performance. 
+ * - That memory full is detected correctly. 
+ * - That with random allocation and deallocation we don't get any corruption. 
+ *
+ * Once this is sorted we can implement kvector which may be very useful. 
+ */
 void test_memory_pool()
 {
     /* a 32k MemoryPool. */
     MemoryPool<32> pool;
-    char * blocks[10];
+    const int kBlockCount = 85; 
+    const int kBlockMultiplier = 40; 
+    char * blocks[kBlockCount];
 
-    for (int i = 0; i < 10; i++)
+    pool.kprint_debug();
+
+    for (int i = 1; i < kBlockCount; i++)
     {
-        blocks[i] = (char*) pool.malloc(13 * i);
-        kdebug((uint32) blocks[i]);
+        size_t block_size = kBlockMultiplier * i; 
+        blocks[i] = (char*) pool.malloc(block_size);
 
-        kdebug("Writing to " + KString((uint32) blocks[i])); 
-
-        for (int j = 0; j < (13 * i); ++j)
+        for (int j = 0; j < (block_size); ++j)
             *(blocks[i] + j) = i; 
     }
+
+    pool.free((void *) blocks[2]); 
+    pool.free((void *) blocks[40]); 
+    pool.free((void *) blocks[41]); 
+    pool.free((void *) blocks[42]); 
+    pool.free((void *) blocks[43]); 
+
+    size_t biggest_block_size = pool.size_largest_free_block();
+
+    pool.kprint_debug();
+
+    pool.free((void *) blocks[44]); 
+
+    kassert(pool.size_largest_free_block() > biggest_block_size); 
+
     while (1) {}
 }
 
