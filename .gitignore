@@ -1,3 +1,4 @@
+*.elf
 fos.elf
 fos.bin
 *.o

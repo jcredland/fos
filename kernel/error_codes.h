@@ -11,5 +11,9 @@ enum class DiskResultCode
 {
     SUCCESS = 0,
     END_OF_FILE = -1,
-    DISK_ERROR = -2
+    DISK_ERROR = -2,
+    FILE_NOT_FOUND = -3,
+    BAD_HANDLE = -4,
+    ALIGNMENT_ERROR = -5  
+
 };

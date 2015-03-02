@@ -1,4 +1,3 @@
-
 /** The most boring of file systems to get started. But FAT16 can be 
  * written to by MacOS so it'll be handy 
  * for copy cross-compiled binaries and so on into the system for testing. 

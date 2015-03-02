@@ -17,17 +17,22 @@
  * Also, whether it should be a bit more POSIX.  And whether they should all be defined
  * in one place, or ... well ... yeah.
  */
-int fs_open(const char * file_name);
-int fs_read(int file_handle, const char * buffer, uint64 bytes);
-int fs_close(int file_handle); 
 
-struct F_PACKED directory_entry_t
+class VirtualFS 
 {
-    char name[256];
+    VirtualFS(FileSystem & fs_to_mount);
+
+    int open(const char * file_name);
+    int read(int file_handle, const char * buffer, uint64 bytes);
+    int close(int file_handle); 
+
+    struct F_PACKED FsDirEntry
+    {
+        char name[256];
+    };
+
+    /**
+     * Reads at most maximum_size of directory entries into a buffer. 
+     */
+    uint32 fs_dir_read(const char * file_name, const char * buffer, uint32 maximum_size);
 };
-
-/**
- * Reads at most maximum_size of directory entries into a buffer. 
- */
-uint32 fs_dir_read(const char * file_name, const char * buffer, uint32 maximum_size);
-
