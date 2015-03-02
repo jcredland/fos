@@ -60,7 +60,7 @@ private:
     /* Stores memory allocations, one bit per page. Approximately 128k. A 
      * 1 means the page is in use. */
     /* @todo: only reserves enough for 1 gig. */
-    char * memory_allocations;
+    unsigned char * memory_allocations;
     unsigned memory_allocation_size; 
 
     uint64_t total_memory; 

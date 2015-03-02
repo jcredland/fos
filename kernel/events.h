@@ -13,7 +13,7 @@ struct Event
     KString to_debug_string()
     {
         KString s("Event:"); 
-        s.appendHex(data); 
+        s.append_hex(data); 
         return s;
     }
 

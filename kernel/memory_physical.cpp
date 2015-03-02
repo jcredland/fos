@@ -38,7 +38,7 @@ PhysicalMemoryManager::PhysicalMemoryManager()
 
         if (ptr->type == NORMAL_MEMORY && len >= (ma_upper_boundary))
         {
-            memory_allocations = (char *) base;
+            memory_allocations = (unsigned char *) base;
             vga.writeln(KString("Allocated memory for memory allocation table at:") + KString(uintptr_t(base))); 
             break;
         }
@@ -53,7 +53,7 @@ PhysicalMemoryManager::PhysicalMemoryManager()
     }
 
     /* mark our memory as in use. */
-    memset(memory_allocations, 0xFF, memory_allocation_size); 
+    memset((char*)memory_allocations, 0xFF, memory_allocation_size); 
 
     /* mark up what's actually available. */
     ptr = &ram_data; 
@@ -76,12 +76,14 @@ PhysicalMemoryManager::PhysicalMemoryManager()
 
     available_memory = total_memory;
 
+    /* Reserve this bit used by the BIOS. */
+    reserve_range(0x0, 0x1000); 
     /* And finally reserve what we used at the start. */
     reserve_range((uintptr_t) memory_allocations, ma_upper_boundary); 
     /* And reserve our stack. */
     reserve_range(0x3000, 0x4000); 
     /* @todo: And, shit, we'd better reserve the kernel space too! */
-    reserve_range(0x7000, 0x10000); 
+    reserve_range(0x7000, 0x20000); 
 }
 
 uintptr_t PhysicalMemoryManager::get_highest_memory_address()
@@ -130,8 +132,6 @@ void * PhysicalMemoryManager::get_multiple_4k_pages(unsigned num_pages_required)
     unsigned num_pages_found = 0; 
     unsigned possible_first_page;
     
-//    for (int i = 0; i < memory_allocation_size; ++i)
-
     unsigned mem_table_index = 0;
     while (num_pages_found < num_pages_required)
     {
@@ -142,6 +142,7 @@ void * PhysicalMemoryManager::get_multiple_4k_pages(unsigned num_pages_required)
         }
 
         unsigned char mem_table_entry = memory_allocations[mem_table_index];
+        kdebug(KString("mem_table_entry: ") + KString(uint8(mem_table_entry)));
 
         if (num_pages_found > 0)
         {
@@ -174,7 +175,7 @@ void * PhysicalMemoryManager::get_multiple_4k_pages(unsigned num_pages_required)
             if (mem_table_entry == 0)
                 num_pages_found = 8;
             else
-                num_pages_found = 7 - bit_scan_reverse_32(memory_allocations[mem_table_index]);
+                num_pages_found = 7 - bit_scan_reverse_32(mem_table_entry);
 
             if (num_pages_found != 0)
                 possible_first_page = (mem_table_index * 8) + num_pages_found;

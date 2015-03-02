@@ -13,7 +13,7 @@ public:
 
     KString (const char* string)
     {
-        copyFrom (buf, string, MAX_STRING_LENGTH);
+        copy_from (buf, string, MAX_STRING_LENGTH);
     }
 
     /** Copy at most maxLength characters from a buffer string to the KString.
@@ -25,46 +25,46 @@ public:
         if (maxLength < MAX_STRING_LENGTH)
         {
             buf[maxLength] = 0;
-            copyFrom (buf, string, maxLength);
+            copy_from (buf, string, maxLength);
         }
         else
         {
-            copyFrom (buf, string, MAX_STRING_LENGTH);
+            copy_from (buf, string, MAX_STRING_LENGTH);
         }
     }
 
-    KString (uint64_t hexNumber) : KString()
+    KString (uint64_t hex_number) : KString()
     {
-        appendHex (hexNumber);
+        append_hex (hex_number);
     }
-    KString (uint32_t hexNumber) : KString()
+    KString (uint32_t hex_number) : KString()
     {
-        appendHex (hexNumber);
+        append_hex (hex_number);
     }
-    KString (uint16_t hexNumber) : KString()
+    KString (uint16_t hex_number) : KString()
     {
-        appendHex (hexNumber);
+        append_hex (hex_number);
     }
-    KString (uint8_t  hexNumber) : KString()
+    KString (uint8_t  hex_number) : KString()
     {
-        appendHex (hexNumber);
+        append_hex (hex_number);
     }
 
-    void appendHex (uint64_t hex)
+    void append_hex (uint64_t hex)
     {
-        appendHex (hex, 16);
+        append_hex (hex, 16);
     }
-    void appendHex (uint32_t hex)
+    void append_hex (uint32_t hex)
     {
-        appendHex (hex, 8);
+        append_hex (hex, 8);
     }
-    void appendHex (uint16_t hex)
+    void append_hex (uint16_t hex)
     {
-        appendHex (hex, 4);
+        append_hex (hex, 4);
     }
-    void appendHex (uint8_t  hex)
+    void append_hex (uint8_t  hex)
     {
-        appendHex (hex, 2);
+        append_hex (hex, 2);
     }
 
     void append_char (char c)
@@ -78,7 +78,7 @@ public:
         buf[len + 1] = 0;
     }
 
-    void appendHex (uint64_t hex, int num_digits)
+    void append_hex (uint64_t hex, int num_digits)
     {
         int blanks = num_digits / 4 - 1;
 
@@ -94,7 +94,7 @@ public:
         {
             string_idx--;
 
-            tb[string_idx] = getDigit (0xF & hex);
+            tb[string_idx] = get_digit (0xF & hex);
             hex = hex >> 4;
 
             if (i != 0 && (i % 4) == 0)
@@ -104,12 +104,12 @@ public:
         tb[num_digits + blanks] = 0;
 
         int len = length();
-        copyFrom (buf + len, tb, MAX_STRING_LENGTH - len);
+        copy_from (buf + len, tb, MAX_STRING_LENGTH - len);
     }
 
     KString (const KString& rhs)
     {
-        copyFrom (buf, rhs.get(), MAX_STRING_LENGTH);
+        copy_from (buf, rhs.get(), MAX_STRING_LENGTH);
     }
 
     KString& operator+ (const KString& rhs)
@@ -134,7 +134,7 @@ public:
     void append (const KString& rhs)
     {
         int len = length();
-        copyFrom (buf + len, rhs.get(), MAX_STRING_LENGTH - len);
+        copy_from (buf + len, rhs.get(), MAX_STRING_LENGTH - len);
     }
 
     /** Removes white-space characters from the end of the string. */
@@ -176,7 +176,7 @@ public:
         return len;
     }
 private:
-    static char getDigit (uint8_t number)
+    static char get_digit (uint8_t number)
     {
         if (number < 10)
             return number + '0';
@@ -184,8 +184,8 @@ private:
             return number + ('A' - 10);
     }
 
-    void copyFrom (char* dest, const char* source, int count)
-    {
+    void copy_from (char* dest, const char* source, int count)
+    { 
         char* b = dest;
 
         while (count--)
@@ -201,3 +201,7 @@ private:
 };
 
 
+inline KString operator+(const char * lhs, const KString & rhs)
+{
+    return KString(lhs) + rhs; 
+}

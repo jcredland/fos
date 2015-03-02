@@ -11,17 +11,23 @@ public:
     MemoryPool()
     {
         memory_pool = (char*) pmem.get_multiple_4k_pages(size_to_allocate_in_4kb_pages);
+
+        kdebug("Pool start addr" + KString((uint32) memory_pool)); 
+
         memory_pool_size = 4096 * size_to_allocate_in_4kb_pages;
 
         FreeListNode * first_node = (FreeListNode *) memory_pool; 
         first_node->size = memory_pool_size;
         first_node->next = nullptr;
+
+        free_list_start = first_node;
     }
 
     ~MemoryPool()
     {
         pmem.free_multiple_4k_pages(memory_pool, size_to_allocate_in_4kb_pages); 
     }
+
     /** 
      * Allocate memory.  The memory will not be initialized. 
      *
@@ -56,8 +62,8 @@ public:
 
         /* Now create a new free node entry and remove the old one from the list. 
          * Do the pointer arithmetic in bytes by casting to a uintptr_t. */
-        uintptr_t base_addr_of_space = static_cast<uintptr_t>(node); 
-        FreeListNode * new_node = base_addr_of_space + size_required; 
+        uintptr_t base_addr_of_space = reinterpret_cast<uintptr_t>(node); 
+        FreeListNode * new_node = (FreeListNode *) (base_addr_of_space + size_required); 
 
         new_node->next = node->next;
         new_node->size = node->size - size_required;
@@ -71,13 +77,16 @@ public:
          * and a security / error checking flag. */
         BlockHeader * header = (BlockHeader *) node;
         header->canary_flag = kCanaryFlagValue;
-        header->size = size_required; 
-        return (void*)(static_cast<uintptr_t>(header) + block_header_size);
+        header->size_including_header = size_required; 
+        return (void*)(reinterpret_cast<uintptr_t>(header) + block_header_size);
     }
 
 
     void free(void * address_to_free)
     {
+        if (address_to_free == nullptr)
+            return;
+
         BlockHeader * header = static_cast<uintptr_t>(address_to_free) - block_header_size;
         /* Save the size as we will overwrite the BlockHeader with a new FreeListNode. */
         size_t size_of_block = header->size_including_header;
@@ -128,7 +137,7 @@ private:
      * better detect malicious heap overflows. */
     const uint16 kCanaryFlagValue = 0xF1A6;
 
-    constexpr size_t align_up(size_t size) 
+    constexpr static size_t align_up(size_t size) 
     {
         return (size + alignment_minus_one) & alignment_mask;
     }
@@ -140,4 +149,24 @@ private:
     size_t memory_pool_size;
     FreeListNode * free_list_start = nullptr;
 };
+
+
+void test_memory_pool()
+{
+    /* a 32k MemoryPool. */
+    MemoryPool<32> pool;
+    char * blocks[10];
+
+    for (int i = 0; i < 10; i++)
+    {
+        blocks[i] = (char*) pool.malloc(13 * i);
+        kdebug((uint32) blocks[i]);
+
+        kdebug("Writing to " + KString((uint32) blocks[i])); 
+
+        for (int j = 0; j < (13 * i); ++j)
+            *(blocks[i] + j) = i; 
+    }
+    while (1) {}
+}
 

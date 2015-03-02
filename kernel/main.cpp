@@ -11,7 +11,7 @@ void halt ()
 void default_interrupt_handler(int interruptNumber)
 {
     KString message ("interrupt: unhandled interrupt ");
-    message.appendHex((uint32_t) interruptNumber);
+    message.append_hex((uint32_t) interruptNumber);
     kerror(message);
     halt();
 }
@@ -84,6 +84,8 @@ int main()
         kdebug(KString("name:") + name + KString("<:")); 
     }
     kdebug("done.");
+
+    test_memory_pool(); 
 
     while (1)
     {
