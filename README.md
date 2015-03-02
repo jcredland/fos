@@ -30,3 +30,14 @@ Big milestones will be:
 Status and documentation:
 https://docs.google.com/presentation/d/1JLeGdG1nwIE328pD22edmPHvNbw9Wb6zIGZjvydZbrk/edit#slide=id.g7ac98eeed_030
 
+## Compiling and running
+
+You will need a cross-compiler and the other GNU binutils kit.  Use the i686-elf configuration.  There are instructions here: http://wiki.osdev.org/GCC_Cross-Compiler
+
+It runs on QEMU for testing.  The *execute* script in the root folder has a -d option that will allow you to attach a debugger.  
+
+The .gdbinit script in the root folder contains a series of commands that will set gdb up properly.  My suggestion is: 
+- Put *set auto-load local-gdbinit* in your ~/.gdbinit.
+- Run i686-elf-gdb from the root folder of the FOS source. 
+
+Then it'll automatically run the FOS specific commands.
