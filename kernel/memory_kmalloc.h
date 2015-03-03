@@ -231,7 +231,7 @@ void test_memory_pool()
         size_t block_size = kBlockMultiplier * i; 
         blocks[i] = (char*) pool.malloc(block_size);
 
-        for (int j = 0; j < (block_size); ++j)
+        for (size_t j = 0; j < block_size; ++j)
             *(blocks[i] + j) = i; 
     }
 

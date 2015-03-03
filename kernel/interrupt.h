@@ -5,6 +5,16 @@ template <int N> static inline void raiseInterrupt (void)
     asm volatile ("int %0\n" : : "N"(N));
 }
 
+/**
+ * Interrupts are managed as follows: 
+ *
+ * - InterruptDriver registers the IDT in it's constructor.
+ * - The IDT points to a short series of assembler stubs. 
+ * - The assembler stubs call a CDECL function interrupt_handler(int, int) putting the appropriate 
+ *   interrupt number and error code into the function parameters via the stack.
+ * - The interrupt_handler looks up the InterruptDriver object and calls the call_handler method on it. 
+ * - The call_handler looks up a table of registered interrupt handlers and hands off to the appropriate one. 
+ */
 class InterruptDriver
 {
 public:
@@ -23,9 +33,9 @@ public:
         MAX_INTERRUPT_VECTORS = 256
     };
 
-    void set_handler(int interruptNumber, void(*newHandler)(int))
+    void set_handler(int interrupt_num, void(*new_handler)(int))
     {
-        handler[interruptNumber] = newHandler;
+        handler[interrupt_num] = new_handler;
     }
 
     static void enable_hardware_interrupts()
@@ -38,26 +48,26 @@ public:
         asm volatile ( "cli" );
     }
 
-    void call_handler(uint8_t interruptNumber)
+    void call_handler(uint8_t interrupt_num)
     {
-        (*handler[interruptNumber])(interruptNumber);
+        (*handler[interrupt_num])(interrupt_num);
     }
     
 private:
     void register_all_handlers();
     /** Sets up an entry in the IDT. */
-    void set_vector_stub(uint8_t interruptNumber, char *asmInterruptHandler) 
+    void set_vector_stub(uint8_t interrupt_num, char *asm_interrupt_handler) 
     {
-        auto & i = interruptNumber;
-        kassert(i > 0 && i < 256);
-        
-        idt[i].baseLow  = (ptrdiff_t) asmInterruptHandler & 0xFFFF;
-        idt[i].baseHi   = ((ptrdiff_t) asmInterruptHandler >> 16) & 0xFF;
-        idt[i].segment  = 0x08;
-        idt[i].flags    = INTERRUPT_TYPE_TRAP_32BIT | INTERRUPT_ENABLED;
-        idt[i]._reserved = 0;
+        idt[interrupt_num].baseLow  =  (ptrdiff_t) asm_interrupt_handler & 0xFFFF;
+        idt[interrupt_num].baseHi   = ((ptrdiff_t) asm_interrupt_handler >> 16) & 0xFF;
+        idt[interrupt_num].segment  = 0x08;
+        idt[interrupt_num].flags    = INTERRUPT_TYPE_TRAP_32BIT | INTERRUPT_ENABLED;
+        idt[interrupt_num]._reserved = 0;
     }
 
+    /**
+     * Intel data structure.  The format of an entry in the interrupt descriptor table.
+     */
     struct F_PACKED Interrupt
     {
         uint16_t baseLow;
@@ -71,12 +81,13 @@ private:
     
     Handler handler[256];
     Interrupt idt[256]; /* Align to 8 bytes. */
-    
+   
+   /* Intel data structure.  LIDT instruction points to this data structure in memory, which
+    * in turn points to the Interrupt Descriptor Table itself. */ 
     struct F_PACKED InterruptPointer
     {
         uint16_t length;
         uint32_t base;
-        /* 48 bits. */
     };
     
     InterruptPointer idtr;
@@ -90,9 +101,9 @@ extern "C"
  * It may or may not include the error code. If there is no error code then errorCode will
  * be set to zero. 
  */
-void interrupt_handler(uint8_t interruptNumber, uint16_t errorCode)
+void interrupt_handler(uint8_t interrupt_num, uint16_t err_code)
 {
-    interrupt_driver.call_handler(interruptNumber);
+    interrupt_driver.call_handler(interrupt_num);
 }
 }
 

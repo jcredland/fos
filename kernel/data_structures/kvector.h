@@ -23,6 +23,25 @@ typename remove_reference<T>::type&& move (T&& arg)
     return static_cast < typename remove_reference<T>::type && > (arg);
 }
 
+/** The std::find and std::find_if operations. */
+template <typename InputIterator, typename T>
+InputIterator find(InputIterator first, InputIterator last, const T & value)
+{
+    while (first != last && (value != *first)) /* Why does the GNU C++ implementation use !(*first == value) rather than != ? */
+        ++first;
+
+    return first; 
+}
+
+template <typename InputIterator, typename Predicate>
+InputIterator find_if(InputIterator first, InputIterator last, Predicate P)
+{
+    while (first != last && !P(*first))
+        ++first; 
+
+    return first;
+}
+
 /** 
  * A vector, stored on the kernels main free store 'kheap'
  *
@@ -107,20 +126,26 @@ private:
     void grow()
     {
         size_t new_capacity = capacity() * 2;
-        T* new_ptr = new T[new_capacity];
+        T* new_ptr = static_cast<T*>(::operator new(sizeof(T) * new_capacity)); 
         T* p = new_ptr;
         size_t size_now = size();
 
+        // option 1
         for (auto& item : *this)
-            * (p++) = move(item);
+            *(new (p++) T()) = move(item);
+        
+        // option 2
+        for (auto& item : *this)
+            new (p++) T(move(item));
 
-        delete[] begin_ptr;
+        ::operator delete (begin_ptr);
 
         begin_ptr   = new_ptr;
         end_cap_ptr = new_ptr + new_capacity;
         end_ptr     = new_ptr + size_now;
     }
 };
+
 
 };
 
