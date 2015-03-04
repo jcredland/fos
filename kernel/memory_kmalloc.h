@@ -249,6 +249,5 @@ void test_memory_pool()
 
     kassert(pool.size_largest_free_block() > biggest_block_size); 
 
-    while (1) {}
 }
 

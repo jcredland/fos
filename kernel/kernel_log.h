@@ -6,7 +6,7 @@ enum KLogLevel
     KL_DEBUG
 };
 
-inline void klog (KLogLevel level, const KString& log)
+inline void klog (KLogLevel /* level */, const KString& log)
 {
     vga.writeln (log);
 }

@@ -143,7 +143,3 @@ void VgaDriver::set_colour(VgaColours colour)
     current_colour = (uint8) colour; 
 }
 
-
-VgaDriver vga;
-
-

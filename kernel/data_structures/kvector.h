@@ -130,13 +130,8 @@ private:
         T* p = new_ptr;
         size_t size_now = size();
 
-        // option 1
         for (auto& item : *this)
-            *(new (p++) T()) = move(item);
-        
-        // option 2
-        for (auto& item : *this)
-            new (p++) T(move(item));
+            new((void *) p++) T(move(item));
 
         ::operator delete (begin_ptr);
 

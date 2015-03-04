@@ -33,9 +33,17 @@ public:
         MAX_INTERRUPT_VECTORS = 256
     };
 
+    /** Adds a bare C function as an interrupt handler. */
     void set_handler(int interrupt_num, void(*new_handler)(int))
     {
         handler[interrupt_num] = new_handler;
+    }
+    
+    /** Adds a DeviceInterruptHandler object, which overrides any bare C handlers
+     * that may have been registered for this interrupt number. */
+    void set_handler(int interrupt_num, DeviceInterruptHandler * device_handler)
+    {
+        device_handlers[interrupt_num] = device_handler;
     }
 
     static void enable_hardware_interrupts()
@@ -50,7 +58,10 @@ public:
 
     void call_handler(uint8_t interrupt_num)
     {
-        (*handler[interrupt_num])(interrupt_num);
+        if (device_handlers[interrupt_num] != nullptr)
+            device_handlers[interrupt_num]->handle_interrupt(interrupt_num); 
+        else 
+            (*handler[interrupt_num])(interrupt_num);
     }
     
 private:
@@ -80,6 +91,7 @@ private:
     typedef void (*Handler)(int);
     
     Handler handler[256];
+    DeviceInterruptHandler * device_handlers[256];
     Interrupt idt[256]; /* Align to 8 bytes. */
    
    /* Intel data structure.  LIDT instruction points to this data structure in memory, which
@@ -101,7 +113,7 @@ extern "C"
  * It may or may not include the error code. If there is no error code then errorCode will
  * be set to zero. 
  */
-void interrupt_handler(uint8_t interrupt_num, uint16_t err_code)
+void interrupt_handler(uint8_t interrupt_num, uint16_t /* err_code */)
 {
     interrupt_driver.call_handler(interrupt_num);
 }

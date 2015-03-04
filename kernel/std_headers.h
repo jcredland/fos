@@ -9,6 +9,7 @@
 #include <stdbool.h> 
 #include <stdint.h>
 
+#include "data_structures/kvector.h"
 
 /** Local headers. */
 #include "kernel_type.h"

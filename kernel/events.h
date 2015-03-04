@@ -1,5 +1,5 @@
 
-
+/** An event. */
 struct Event 
 {
     enum Type 
@@ -8,6 +8,7 @@ struct Event
         KEYDOWN,
         KEYUP
     };
+
     Type type; 
 
     KString to_debug_string()
@@ -20,12 +21,20 @@ struct Event
     uint32_t data; 
 };
 
+/** 
+ * The event manager takes incoming events and assigns them to
+ * process event queues.
+ */
+
+
+/** A queue of events. QueueSize must be a power of two. */
+template <size_t QueueSize, EventType = Event>
 class EventQueue
 {
 public:
     EventQueue()
         :
-            mask(0xF),
+            mask(QueueSize - 1),
             next_write(0),
             next_read(0)
     {}
@@ -34,7 +43,8 @@ public:
     {
         return ((next_write + 1) & mask) == (next_read & mask);
     }
-    void add(Event e)
+
+    void add(const EventType & e)
     {
         InterruptDriver::disable_hardware_interrupts(); 
 
@@ -44,12 +54,22 @@ public:
         InterruptDriver::enable_hardware_interrupts(); 
     }
 
+    /** Adds an event to the queue without disabling interrupts.  Use 
+     * when interrupts are already disabled, usually from an interrupt 
+     * handler.  */
+    void add_without_cli(const EventType & e)
+    {
+        if (! is_full())
+            queue[mask & (next_write++)] = e; 
+    }
+
+
     /** Gets the next event in the queue.
      *
      * Not to be called from interrupt service routines. */
-    Event next()
+    TypeEvent next()
     {
-        Event e; 
+        EventType e; 
 
         if (next_write == next_read)
             e.type = Event::VOID; 
@@ -62,7 +82,7 @@ private:
     uint64_t mask;
     uint64_t next_write; 
     uint64_t next_read;
-    Event queue[16];
+    Event queue[QueueSize];
 
     F_DECLARE_NO_COPY(EventQueue)
 };

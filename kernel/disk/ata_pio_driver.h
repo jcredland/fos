@@ -29,7 +29,7 @@ public:
     bool write (char* buffer, uint8 drive, uint32 logical_block_address);
 
     /** Return the number of 512 byte sectors. */
-    uint32 size(uint8 drive) { return 0; }
+    uint32 size(uint8 /* drive */) { return 0; }
 
 private:
     uint16 base_addr = 0x1F0;

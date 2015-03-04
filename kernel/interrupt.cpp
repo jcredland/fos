@@ -26,7 +26,7 @@ const char * interrupt_cpu_trap_names[19] =
 
 void interrupt_cpu_trap_handler(int trap_number)
 {
-    kerror("cpu: trap.  cpu halted."); 
+    kerror("cpu: trap.  cpu halted. trap_number=" + KString( (uint16) trap_number)); 
 
     KString error_message(interrupt_cpu_trap_names[trap_number]); 
 
@@ -47,6 +47,8 @@ InterruptDriver::InterruptDriver(void(*default_handler)(int))
             handler[i] = interrupt_cpu_trap_handler; 
         else
             handler[i] = default_handler;
+
+        device_handlers[i] = nullptr;
     }
 
     idtr.base = (uint32_t) idt;

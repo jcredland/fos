@@ -84,6 +84,8 @@ PhysicalMemoryManager::PhysicalMemoryManager()
     reserve_range(0x3000, 0x4000); 
     /* @todo: And, shit, we'd better reserve the kernel space too! */
     reserve_range(0x7000, 0x20000); 
+
+    print_debug(vga);
 }
 
 uintptr_t PhysicalMemoryManager::get_highest_memory_address()
@@ -189,6 +191,12 @@ void * PhysicalMemoryManager::get_multiple_4k_pages(unsigned num_pages_required)
     return (void *) p; 
 }
 
+void PhysicalMemoryManager::free_multiple_4k_pages(void * pointer, 
+                                                   unsigned number_of_pages_to_free)
+{
+    kerror("free_multiple_4k_pages is not yet implemented."); 
+}
+
 int PhysicalMemoryManager::get_index_of_continuous_clear_bits(unsigned char byte, 
                                                               unsigned length_required)
 {
@@ -285,5 +293,4 @@ void PhysicalMemoryManager::print_debug(VgaDriver & vga)
     vga.writeln(KString("Memory available ") + KString(available_memory / 1024) + "k");
 }
 
-PhysicalMemoryManager pmem;
 

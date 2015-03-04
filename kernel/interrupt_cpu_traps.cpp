@@ -25,7 +25,7 @@ const char * interrupt_cpu_trap_names[19] =
 
 void interrupt_cpu_trap(int trap_number)
 {
-    kerror("cpu: trap.  cpu halted."); 
+    kerror("cpu: trap.  cpu halted. trap_number=" + KString(trap_number)); 
 
     KString error_message(interrupt_cpu_trap_names(trap_number)); 
 
