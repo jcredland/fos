@@ -72,13 +72,27 @@ public:
         fat_fs2 (ata_drive_data, 2, 100)
     { 
         pci.search_for_devices();
-        device_manager.register_device(new Keyboard()); 
+        device_manager.register_device(new KeyboardHardwareDriver()); 
     }
 
     void run()
     {
         kdebug("Entering main loop.");
-        while (1) {}
+
+        KeyEventManager key_event_mgr; 
+
+        while (1) 
+        {
+            KeyEvent e = key_event_mgr.next(); 
+
+            if (! (e == KeyEvent::invalid))
+            {
+                KString s;
+                s.append_char(e.character); 
+                vga.write(s); 
+            }
+        
+        }
     }
 
 

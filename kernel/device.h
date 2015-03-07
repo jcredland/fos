@@ -21,8 +21,8 @@ class Device
         virtual ~Device() {}
         /** Returns the friendly name of the device. */
         virtual const char * get_device_name() const = 0;
-        /** Get the next item from the device's buffer. */
-        virtual char read_char() = 0;
+        /** Get the next item from the device's buffer.  Returns -1 if there is no character waiting. */
+        virtual int read_char() = 0;
     protected:
         /** Install a handler for an interrupt. */
         void install_interrupt_handler(uint8 interrupt_number, DeviceInterruptHandler * handler);
@@ -41,7 +41,18 @@ class DeviceManager
             registered_devices.push_back(new_device); 
         }
 
+        Device * get_device_by_name(const char * name)
+        {
+            for (auto dptr: registered_devices)
+                if (strcmp(name, dptr->get_device_name()) == 0)
+                    return dptr; 
+
+            return nullptr; 
+        }
+
     private:
         kstd::kvector<Device *> registered_devices; 
 };
+
+extern DeviceManager device_manager;
 

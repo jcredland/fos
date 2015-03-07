@@ -32,3 +32,17 @@ inline int strncmp(const char * a, const char * b, size_t count)
 
     return (*(unsigned char *) a) - (*(unsigned char *) b);
 }
+
+inline int strcmp(const char * a, const char * b)
+{
+    while (*a == *b)
+    {
+        if (*a == 0)
+            return 0; 
+
+        ++a; 
+        ++b; 
+    }
+
+    return (*(unsigned char *) a) - (*(unsigned char *) b);
+}

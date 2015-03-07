@@ -16,8 +16,12 @@
 
 extern MemoryPool<64> kheap;
 
+
 #include "disk/disk.h"
 
 /** Applications and utilities. */
+
+#include "keyboard_scancodes.h"
+#include "keyboard_event_manager.h"
 //#include "event_watcher.h"
 

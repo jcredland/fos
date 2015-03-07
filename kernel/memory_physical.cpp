@@ -194,6 +194,8 @@ void * PhysicalMemoryManager::get_multiple_4k_pages(unsigned num_pages_required)
 void PhysicalMemoryManager::free_multiple_4k_pages(void * pointer, 
                                                    unsigned number_of_pages_to_free)
 {
+    (void) pointer; 
+    (void) number_of_pages_to_free;
     kerror("free_multiple_4k_pages is not yet implemented."); 
 }
 

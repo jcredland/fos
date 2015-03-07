@@ -137,6 +137,16 @@ public:
         copy_from (buf + len, rhs.get(), MAX_STRING_LENGTH - len);
     }
 
+    /** Remove a single character from the end of the string. */
+    void remove_last_character()
+    {
+        char *p = buf + length() - 1;
+
+        if (p >= buf)
+            *p = 0; 
+    }
+
+
     /** Removes white-space characters from the end of the string. */
     void trim_end()
     {
@@ -205,3 +215,4 @@ inline KString operator+(const char * lhs, const KString & rhs)
 {
     return KString(lhs) + rhs; 
 }
+

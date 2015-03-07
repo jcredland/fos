@@ -10,5 +10,6 @@
 #include "pci_devices.cpp"
 #include "cpplib.cpp"
 #include "device.cpp"
+#include "keyboard_event_manager.cpp"
 #include "main.cpp"
 
