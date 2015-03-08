@@ -124,6 +124,11 @@ void PhysicalMemoryManager::mark_used(int page_number)
     memory_allocations[index] = memory_allocations[index] | (1 << bit); 
 }
 
+void * PhysicalMemoryManager::get_4k_page()
+{
+    return get_multiple_4k_pages(1); 
+}
+
 void * PhysicalMemoryManager::get_multiple_4k_pages(unsigned num_pages_required)
 {
     /* So, we:
@@ -295,4 +300,13 @@ void PhysicalMemoryManager::print_debug(VgaDriver & vga)
     vga.writeln(KString("Memory available ") + KString(available_memory / 1024) + "k");
 }
 
+bool PhysicalMemoryManager::is_command_supported(const KString & cmd)
+{
+    return (cmd == "pmem");
+}
 
+int PhysicalMemoryManager::execute_cli_command(const kstd::kvector<KString> & parameter_list)
+{
+    print_debug(vga); 
+    return 0; 
+}

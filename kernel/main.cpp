@@ -93,24 +93,9 @@ public:
 
     void run()
     {
-        kdebug("Entering main loop.");
-
-        KeyEventManager key_event_mgr; 
-
+        kdebug("Launching CLI.");
+        cli_register_command(&pmem); 
         cli_main(); 
-
-        while (1) 
-        {
-            KeyEvent e = key_event_mgr.next(); 
-
-            if (! (e == KeyEvent::invalid))
-            {
-                KString s;
-                s.append_char(e.character); 
-                vga.write(s); 
-            }
-        
-        }
     }
 
 

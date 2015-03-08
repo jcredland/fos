@@ -1,5 +1,6 @@
 #pragma once
 #include <std_headers.h>
+#include <cli/cli.h>
 
 /* see ACPIspec40a.pdf */
 struct F_PACKED MemoryMapEntry
@@ -18,6 +19,8 @@ extern uint32_t ram_data_size;
 extern MemoryMapEntry ram_data; 
 
 class PhysicalMemoryManager
+:
+    public CliCommand
 {
 public:
     PhysicalMemoryManager();
@@ -39,6 +42,9 @@ public:
     /** Free up some memory pages previously allocated with allocate_page. 
      */
     void free_page(void * pointer);
+
+    bool is_command_supported(const KString & cmd); 
+    int execute_cli_command(const kstd::kvector<KString> & parameter_list);
 
 private:
     /** Looks inside a byte for length_required free bits.  If found returns
