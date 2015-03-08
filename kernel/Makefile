@@ -1,41 +1,38 @@
 include Makefile.inc
 
 # Dependency options
-DEPENDENCY_OPTIONS = -MM
-PROJECT = project
-#
-#-- Do not edit below this line --
-#
+
 # Subdirs to search for additional source files
+#
 SUBDIRS := $(shell ls -F | grep "\/" | egrep -v "^_" )
 DIRS := ./ $(SUBDIRS)
 SOURCE_FILES := $(foreach d, $(DIRS), $(wildcard $(d)*.cpp) )
+HEADER_FILES := $(foreach d, $(DIRS), $(wildcard $(d)*.h) )
 ASM_SOURCE_FILES := $(foreach d, $(DIRS), $(wildcard $(d)*.asm) )
 #
 # Create an object file of every cpp and asm file
 OBJECTS = $(patsubst %.cpp, %.o, $(SOURCE_FILES)) $(patsubst %.asm, %.o, $(ASM_SOURCE_FILES))
-#
-# Dependencies
-DEPENDENCIES = $(patsubst %.cpp, %.d, $(SOURCE_FILES))
-#
-# Create .d files
-%.d: %.cpp
-	$(CXX) $(CXXFLAGS) $(DEPENDENCY_OPTIONS) $< -MT "$*.o $*.d" -MF $*.d
+
+DEP_OUTPUT = kernel.d
+DEPENDENCY_OPTIONS = -MM
+
 #
 #     # Make $(PROJECT) the default target
-all: $(OBJECTS) $(DEPENDENCIES) $(shell find . -name *.asm)
-
-#$(PROJECT): $(OBJECTS)
-#	$(CXX) $(CXXFLAGS) -o $(PROJECT) $(OBJECTS) $(LIBS)
-
-# Include dependencies (if there are any)
-# ifneq "$(strip $(DEPENDENCIES))" ""
-#   include $(DEPENDENCIES)
-#   endif
+all: $(OBJECTS) 
 #
-#   # Compile every cpp file to an object
+print-%:
+	@echo $* = $($*)
+#
+# Create .d dependency files
+#$(DEP_OUTPUT): $(SOURCE_FILES) $(HEADER_FILES)
+#	$(CXX) $(CXXFLAGS) $(DEPENDENCY_OPTIONS) $(SOURCE_FILES) > $(DEP_OUTPUT)
+
+#-include $(DEP_OUTPUT)
+-include $(OBJECTS:.o=.d)
+
+# Compile every cpp file to an object
 %.o: %.cpp
-	    $(CXX) $(CXXFLAGS) -c $(COMPILE_OPTIONS) -o $@ $< $(HEADERS)
+	    $(CXX) $(CXXFLAGS) -MMD -c $(COMPILE_OPTIONS) -o $@ $< 
 
 # Assemble any .asm files
 %.o: %.asm
@@ -51,7 +48,7 @@ makefile-debug:
 
 .PHONY: clean
 clean:
-	rm -rf *.o
+	rm -rf *.o */*.o
 
 .PHONY: depclean
 depclean:

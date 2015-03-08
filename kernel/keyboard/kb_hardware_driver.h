@@ -38,8 +38,6 @@ public:
     {
         uint8_t scan_code = inb (0x60);
 
-        vga.write(scan_code); 
-
         /* TODO - introduce the mapping, and a buffer. */
         if ( (scan_code & 0x80) != 0x80)
             last_scan_code = (int) scan_code;

@@ -12,8 +12,8 @@
 struct KeyAttributes
 {
     KeyboardKeyCode key_code; 
-    char32_t key_with_shift; 
     char32_t key_without_shift;
+    char32_t key_with_shift; 
 };
 
 typedef KeyAttributes KeyMappingArray;
