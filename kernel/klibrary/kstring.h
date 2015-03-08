@@ -32,6 +32,11 @@ public:
         }
     }
 
+    void clear() 
+    {
+        buf[0] = 0; 
+    }
+
     KString (uint64_t hex_number) : KString()
     {
         append_hex (hex_number);
@@ -121,6 +126,23 @@ public:
     {
         append (rhs);
         return *this;
+    }
+
+    bool operator== (const KString& rhs) const
+    {
+        const char * a = rhs.buf; 
+        const char * b = buf; 
+        while (*a++ == *b++)
+        {
+            if (*a == 0)
+                return true; 
+        }
+        return false;
+    }
+
+    bool operator!= (const KString& rhs) const
+    {
+        return ! operator== (rhs); 
     }
 
 

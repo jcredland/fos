@@ -39,6 +39,17 @@ int VgaDriver::get_y() const
     return cursor / columns; 
 }
 
+uint32 VgaDriver::get_cursor_position() const
+{
+    return cursor; 
+}
+
+void VgaDriver::set_cursor_position(uint32 new_position) 
+{
+    cursor = new_position; 
+    update_hardware_cursor(); 
+}
+
 
 void VgaDriver::write(const char * string)
 {
@@ -85,9 +96,18 @@ void VgaDriver::scroll_one_line()
         *(lastLine+i) = 0;
 }
 
-void VgaDriver::update_cursor_position_from_hardware()
+void VgaDriver::get_hardware_cursor_position()
 {
     
+}
+
+void VgaDriver::update_hardware_cursor()
+{
+    outb(crtc_index_port, CURSOR_HIGH);
+    outb(crtc_data_port, (cursor & 0x000FF00) >> 8); 
+    
+    outb(crtc_index_port, CURSOR_LOW);
+    outb(crtc_data_port, (cursor * 0x00000FF)); 
 }
 
 void VgaDriver::unlock_crtc_registers()

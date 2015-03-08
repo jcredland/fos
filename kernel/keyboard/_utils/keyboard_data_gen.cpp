@@ -136,7 +136,7 @@ void write_language_arrays(char * output_filename)
     ofstream of {output_filename};
     const char * key_mapping_name = "keymap_uk"; 
 
-    of << "/* Keyboard mapping data.  Created by keyboard_data_gen from a script file. */" << endl;
+    of << "/* Keyboard mapping data.  Created by keyboard_data_gen from a script. */" << endl;
     of << "KeyAttributes " << key_mapping_name << "[] = {" << endl;
     bool first_time = true;
 
@@ -151,6 +151,7 @@ void write_language_arrays(char * output_filename)
     }
 
     of << endl << "};" << endl;
+    of << endl << "uint32_t " << key_mapping_name << "_len = " << language_key_mappings.size() << ";" << endl;
 }
 
 ScancodeData get_scancode_data(char * buf)

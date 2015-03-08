@@ -1,5 +1,5 @@
 // This file maps KeyboardScanCodes to KeyboardKeyCodes.
-K_FIRST_KEY 00   // might not be right - qemu warning on scancode for this one.
+K_BACKTICK 00   // might not be right - qemu warning on scancode for this one.
 K_ESCAPE    01
 K_1     02
 K_2     03

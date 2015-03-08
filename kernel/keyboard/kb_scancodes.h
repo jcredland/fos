@@ -1,3 +1,4 @@
+#pragma once
 /**
  * @file This file contains enums for KeyboardScanCodes and KeyboardKeyCodes.  It
  * may be imported by utilities as well as the kernel build so shouldn't have anything

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <keyboard/kb_scancodes.h>
+
 /** @file
  * This set of classes and data can take a stream from the KeyboardHardware driver
  * and translate it into a stream of events which include characters as well as 
@@ -8,7 +10,10 @@
  * It allows for changing the language on a keyboard. 
  */
 
-/** Keymapping describes the characters and functions of keys on the keyboard. */
+/** Keymapping describes the characters and functions of keys on the keyboard. 
+ * This needs to be in the order defined by the keyboard map generation utility.
+ * 
+ */
 struct KeyAttributes
 {
     KeyboardKeyCode key_code; 
@@ -39,6 +44,10 @@ struct Modifiers
  */
 struct KeyEvent
 {
+    KeyEvent()
+    {
+        *this = invalid; 
+    }
     KeyEvent(KeyboardKeyCode key_code, Modifiers modifiers, char32_t character_representation)
         :
             key_code(key_code),
@@ -65,6 +74,20 @@ struct KeyEvent
         return (key_code == rhs.key_code) &&
             (modifiers == rhs.modifiers) &&
             (character == rhs.character); 
+    }
+    bool operator!=(const KeyEvent & rhs) const
+    {
+        return ! operator==(rhs); 
+    }
+
+    bool is_enter_or_return() const
+    {
+        return key_code == K_ENTER; 
+    }
+
+    bool is_backspace() const
+    {
+        return key_code == K_BACKSPACE; 
     }
 
     const static KeyEvent invalid; 

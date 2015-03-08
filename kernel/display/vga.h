@@ -1,6 +1,7 @@
 #pragma once
 #include <klibrary/kstring.h>
 #include <klibrary/klibrary.h>
+#include <klibrary/kernel_type.h>
 
 enum class VgaColours
 {
@@ -41,6 +42,11 @@ public:
     void set_mode(uint8 new_mode); 
 
     void set_colour(VgaColours colour); 
+
+    /** Gets the software cursor position. */ 
+    uint32 get_cursor_position() const; 
+    /** Sets the software cursor position. */ 
+    void set_cursor_position(uint32 new_pos); 
     
 private:
     uint8 current_colour; 
@@ -48,7 +54,12 @@ private:
     void unlock_crtc_registers();
         
     void scroll_one_line();
-    void update_cursor_position_from_hardware();
+    
+    /** Updates the software cursor position from the hardware cursor. */
+    void get_hardware_cursor_position();
+
+    /** Sets the hardware cursor position from the software cursor. */ 
+    void update_hardware_cursor();
     int get_x() const; 
     int get_y() const; 
 
@@ -63,9 +74,12 @@ private:
     static const uint16 seq_misc_output_port_write = 0x3C2;
     static const uint16 seq_misc_output_port_read = 0x3CC;
     static const uint16 crtc_index_port = 0x3D4; 
+
     enum CRTC
     {
-        VGA_MODE = 23
+        VGA_MODE = 23,
+        CURSOR_HIGH = 0xF, 
+        CURSOR_LOW = 0xE
     };
 
     static const uint16 crtc_data_port = 0x3D5; 

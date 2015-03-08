@@ -1,4 +1,4 @@
-/* Keyboard mapping data.  Created by keyboard_data_gen from a script file. */
+/* Keyboard mapping data.  Created by keyboard_data_gen from a script. */
 KeyAttributes keymap_uk[] = {
     { K_BACKTICK, 96, 126 },
     { K_ESCAPE, 27, 27 },
@@ -105,3 +105,5 @@ KeyAttributes keymap_uk[] = {
     { K_UP, 0, 0 },
     { K_RIGHT, 0, 0 }
 };
+
+uint32_t keymap_uk_len = 104;

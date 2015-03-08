@@ -9,6 +9,7 @@
 #include <hw/pci_devices.h>
 #include <hw/pci.h>
 #include <mem/mem.h>
+#include <cli/cli.h>
 
 extern MemoryPool<64> kheap;
 
@@ -95,6 +96,8 @@ public:
         kdebug("Entering main loop.");
 
         KeyEventManager key_event_mgr; 
+
+        cli_main(); 
 
         while (1) 
         {
