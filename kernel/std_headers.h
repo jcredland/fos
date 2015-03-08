@@ -1,6 +1,9 @@
 #pragma once
 
-/** Standard headers. */
+/** Standard headers. 
+ *
+ * Headers required by the majority of kernel cpp files, and potentially test systems.
+ */
 #include <float.h>
 #include <limits.h>
 #include <stdarg.h>
@@ -9,16 +12,7 @@
 #include <stdbool.h> 
 #include <stdint.h>
 
-#include "data_structures/kvector.h"
-
-/** Local headers. */
-#include "kernel_type.h"
-#include "error_codes.h"
-
-#include "clib.h"
-#include "util.h"
-#include "kernel_string.h"
-#include "random.h"
+#include <klibrary/klibrary.h>
 
 #ifdef FOS_MOCK
 /* Fake drivers. */
@@ -27,9 +21,8 @@
 
 #else
 /* Real Drivers. */
-#include "vga.h"
-#include "kernel_log.h"
-#include "timer.h"
+#include <display/vga.h>
+#include "hw/timer.h"
 #endif
 
 

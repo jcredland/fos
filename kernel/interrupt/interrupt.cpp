@@ -1,4 +1,3 @@
-
 /*** CPU TRAPS ***/
 const char * interrupt_cpu_trap_names[19] = 
 {
@@ -74,3 +73,4 @@ void InterruptDriver::register_all_handlers()
         h += size;
     }
 }
+

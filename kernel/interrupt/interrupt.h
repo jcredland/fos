@@ -1,4 +1,7 @@
 
+#include <std_headers.h>
+#include <hw/device.h>
+
 /** Raise an interrupt manually.  Useful for testing. */
 template <int N> static inline void raiseInterrupt (void)
 {
