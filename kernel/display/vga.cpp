@@ -1,4 +1,5 @@
-
+#include <std_headers.h>
+#include <display/vga.h>
 VgaDriver::VgaDriver()
 :
 cursor(0)

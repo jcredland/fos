@@ -1,4 +1,5 @@
 #pragma once 
+#include <std_types.h>
 /** A simple string function that isn't dependent on kmalloc being available.  Limited to a fixed number of characters. */
 class KString
 {

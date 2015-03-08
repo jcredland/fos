@@ -8,7 +8,8 @@ BOOT_DISKB = build/disk2.img
 
 #########################
 
-BOOT_OBJECT = build/bootstrap.elf
+BOOT_OBJECT = bootloader.elf
+KERNEL_OBJECTS = $(shell find kernel -name *.o) 
 
 all:	$(BOOT_DISKA) $(BOOT_DISKB)
 
@@ -16,7 +17,7 @@ $(BOOT_DISKA): build/fos.elf
 	i686-elf-objcopy -O binary fos.elf fos.bin
 
 build/fos.elf: $(KERNEL_OBJECTS) $(BOOT_OBJECT)
-	i686-elf-ld -T fos.ld bootloader.elf $(KERNEL_OBJECTS) --oformat elf32-i386 -o fos.elf
+	i686-elf-ld -L build/ -T boot/fos.ld $(BOOT_OBJECT) $(KERNEL_OBJECTS) --oformat elf32-i386 -o fos.elf
 	i686-elf-objcopy --only-keep-debug build/fos.elf build/fos.sym
 
 # Build the boot strap stuff. 

@@ -50,7 +50,7 @@ makefile-debug:
 
 .PHONY: clean
 clean:
-	rm -f $(PROJECT) $(OBJECTS)
+	rm -f *.o
 
 .PHONY: depclean
 depclean:

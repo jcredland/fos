@@ -1,4 +1,4 @@
-
+#pragma once
 /** Base class for block storage drivers. */
 class StorageDriver
 {

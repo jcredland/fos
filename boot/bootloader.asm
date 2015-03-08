@@ -184,7 +184,7 @@ str_main_os_loaded:
     db 'Stage 2 Loaded', 0
 
 ; 16-bit includes
-%include "kernel/memory_detect_16bit.asm"
+%include "boot/memory_detect_16bit.asm"
 
 ;------------------------------------------------------------
 ; Entering protected mode: 

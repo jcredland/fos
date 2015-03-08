@@ -1,4 +1,6 @@
-
+#pragma once
+#include <klibrary/klibrary.h>
+#include <disk/disk.h>
 
 ATAControllerPIO::ATAControllerPIO (bool usePrimary)
 {
@@ -110,7 +112,7 @@ bool ATAControllerPIO::identify (uint8 drive, DriveData* drive_data_struct)
     reset();
 
     if (ata_in (R_SECTOR_NUMBER) != 0x01)
-        klog (KL_DEBUG, "Sector number wrong after reset");
+        kdebug ("Sector number wrong after reset");
 
     select (drive, 0, 0, 0);
 
@@ -165,7 +167,7 @@ void ATAControllerPIO::reset()
     ata_out (R_CONTROL_REGISTER, SRST);
 
     if (! is_busy())
-        klog (KL_DEBUG, "Drive failed to assert busy flag during reset.");
+        kdebug ("Drive failed to assert busy flag during reset.");
 
     ata_out (R_CONTROL_REGISTER, 0);
 }

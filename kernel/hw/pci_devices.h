@@ -1,4 +1,5 @@
-
+#pragma once
+#include <std_headers.h> 
 
 class PciDevice
 {

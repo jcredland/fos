@@ -1,3 +1,4 @@
+#include <hw/pci_devices.h>
 
 struct PciDeviceClass
 {
