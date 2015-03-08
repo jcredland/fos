@@ -10,9 +10,10 @@ PROJECT = project
 SUBDIRS := $(shell ls -F | grep "\/" | egrep -v "^_" )
 DIRS := ./ $(SUBDIRS)
 SOURCE_FILES := $(foreach d, $(DIRS), $(wildcard $(d)*.cpp) )
+ASM_SOURCE_FILES := $(foreach d, $(DIRS), $(wildcard $(d)*.asm) )
 #
 # Create an object file of every cpp and asm file
-OBJECTS = $(patsubst %.cpp, %.o, $(SOURCE_FILES)) $(patsubst %.asm, %.o, $(SOURCE_FILES))
+OBJECTS = $(patsubst %.cpp, %.o, $(SOURCE_FILES)) $(patsubst %.asm, %.o, $(ASM_SOURCE_FILES))
 #
 # Dependencies
 DEPENDENCIES = $(patsubst %.cpp, %.d, $(SOURCE_FILES))
@@ -22,7 +23,7 @@ DEPENDENCIES = $(patsubst %.cpp, %.d, $(SOURCE_FILES))
 	$(CXX) $(CXXFLAGS) $(DEPENDENCY_OPTIONS) $< -MT "$*.o $*.d" -MF $*.d
 #
 #     # Make $(PROJECT) the default target
-all: $(OBJECTS) $(DEPENDENCIES) $(wildcard *.asm)
+all: $(OBJECTS) $(DEPENDENCIES) $(shell find . -name *.asm)
 
 #$(PROJECT): $(OBJECTS)
 #	$(CXX) $(CXXFLAGS) -o $(PROJECT) $(OBJECTS) $(LIBS)
@@ -50,7 +51,7 @@ makefile-debug:
 
 .PHONY: clean
 clean:
-	rm -f *.o
+	rm -rf *.o
 
 .PHONY: depclean
 depclean:

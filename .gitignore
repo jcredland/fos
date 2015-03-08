@@ -2,3 +2,4 @@
 fos.elf
 fos.bin
 *.o
+*.d

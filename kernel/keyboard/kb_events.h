@@ -19,7 +19,6 @@ struct KeyAttributes
 typedef KeyAttributes KeyMappingArray;
 
 /** Import the KeyboardKeyCode mappings to KeyAttributes information. */
-#include "_utils/uk.h"
 
 
 struct Modifiers
@@ -86,22 +85,7 @@ class KeyEventManager
                 kerror("KeyEventManager: no keyboard driver found."); 
         }
 
-        KeyEvent next()
-        {
-            if (! keyboard)
-                return KeyEvent::invalid; 
-
-            int c = keyboard->read_char();  
-
-            if (c == -1)
-                return KeyEvent::invalid; 
-
-            KeyEvent e {(KeyboardKeyCode) c, 
-                Modifiers(), 
-                keymap_uk[c].key_without_shift};
-
-            return e; 
-        }
+        KeyEvent next();
 
     private:
         Device * keyboard; 

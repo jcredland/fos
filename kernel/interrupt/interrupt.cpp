@@ -77,3 +77,17 @@ void InterruptDriver::register_all_handlers()
     }
 }
 
+
+
+extern "C"
+{
+/** This function is called by the interrupt handler stub when an interrupt occurs. 
+ * It may or may not include the error code. If there is no error code then errorCode will
+ * be set to zero. 
+ */
+void interrupt_handler(uint8_t interrupt_num, uint16_t /* err_code */)
+{
+    interrupt_driver.call_handler(interrupt_num);
+}
+}
+

@@ -125,7 +125,7 @@ int main()
     kdebug ("Welcome to the kernel");
 
     setup_interrupts(); 
-    test_memory_pool();
+    //test_memory_pool();
 
     Kernel kernel;
 
