@@ -1,3 +1,5 @@
+#pragma once
+#include <klibrary/inline_asm_utils.h>
 
 class Timer 
 {

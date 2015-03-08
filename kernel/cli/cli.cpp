@@ -1,4 +1,5 @@
-
+#include <klibrary/klibrary.h>
+#include <cli/cli_inputstring.h>
 
 void cli_main()
 {

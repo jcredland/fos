@@ -1,5 +1,20 @@
 /***********/
 /* Kernel. */
+#include <std_headers.h>
+
+/** Drivers. */
+#include <hw/device.h>
+#include <interrupt/interrupt.h>
+#include <keyboard/keyboard.h>
+#include <hw/pci_devices.h>
+#include <hw/pci.h>
+#include <mem/mem.h>
+
+extern MemoryPool<64> kheap;
+
+#include <disk/disk.h>
+
+/** Applications and utilities. */
 
 void halt ()
 {

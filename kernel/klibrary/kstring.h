@@ -1,7 +1,5 @@
-
-/** A simple string function that isn't dependent on any memory allocation being
- * available.
- */
+#pragma once 
+/** A simple string function that isn't dependent on kmalloc being available.  Limited to a fixed number of characters. */
 class KString
 {
 public:

@@ -1,4 +1,4 @@
-
+#pragma once
 
 /** Code stolen from a snippet on intel's website.  This is not intended to go anywhere near any 
  * production code! */

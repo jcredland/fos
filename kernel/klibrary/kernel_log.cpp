@@ -1,6 +1,8 @@
 
 #include "kernel_log.h"
+#include <klibrary/kstring.h>
 #include <display/vga.h>
+
 
 
 enum KLogLevel

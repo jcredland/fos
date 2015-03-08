@@ -1,4 +1,4 @@
-include Makefile.inc
+include ../Makefile.inc
 
 # Dependency options
 DEPENDENCY_OPTIONS = -MM
@@ -7,7 +7,7 @@ PROJECT = project
 #-- Do not edit below this line --
 #
 # Subdirs to search for additional source files
-SUBDIRS := $(shell ls -F | grep "\/" | egrep -v "^_" )
+SUBDIRS := $(shell ls -F | grep "\/" | grep -v "_test" )
 DIRS := ./ $(SUBDIRS)
 SOURCE_FILES := $(foreach d, $(DIRS), $(wildcard $(d)*.cpp) )
 #

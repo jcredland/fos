@@ -19,7 +19,7 @@ struct KeyAttributes
 typedef KeyAttributes KeyMappingArray;
 
 /** Import the KeyboardKeyCode mappings to KeyAttributes information. */
-#include "utils/uk.h"
+#include "_utils/uk.h"
 
 
 struct Modifiers

@@ -1,3 +1,6 @@
+#pragma once
+#include <klibrary/klibrary.h>
+#include <keyboard/keyboard.h>
 /** Turing Incomplete ... until bored. 
  * 
  * 

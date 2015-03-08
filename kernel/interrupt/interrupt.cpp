@@ -1,3 +1,6 @@
+
+#include <interrupt/interrupt.h>
+
 /*** CPU TRAPS ***/
 const char * interrupt_cpu_trap_names[19] = 
 {

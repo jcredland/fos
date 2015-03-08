@@ -1,3 +1,4 @@
+#pragma once
 /** The kstd namespace contains a very limited set of the C++ standard classes and
  * functions as required for the kernel.
  */

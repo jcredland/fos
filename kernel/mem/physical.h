@@ -1,3 +1,5 @@
+#pragma once
+#include <std_headers.h>
 
 /* see ACPIspec40a.pdf */
 struct F_PACKED MemoryMapEntry

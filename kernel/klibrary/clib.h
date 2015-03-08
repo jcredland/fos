@@ -1,4 +1,4 @@
-
+#pragma once
 /** Functions that we'd normally find in the standard C library. */
 
 inline void memset(char* dest, int ch, size_t count)

@@ -1,3 +1,6 @@
+#pragma once
+
+#include <mem/physical.h>
 
 /** @file Kernel memory allocation routines. 
  *

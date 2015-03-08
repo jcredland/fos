@@ -1,4 +1,4 @@
-
+#include "physical.h"
 /*
  * The start-up process here is to: 
  * - Find the highest address we need to cope with. 

@@ -1,3 +1,9 @@
+#include <std_headers.h>
+#include <mem/kmalloc.h>
+#include <klibrary/new.h>
+
+extern MemoryPool<64> kheap; 
+
 /*
  * Functions we normally take for granted with C++. 
  */
@@ -42,5 +48,5 @@ void *__dso_handle;
 
 extern "C" void __cxa_pure_virtual()
 {
-    klog(KL_ERROR, "Pure virtual function call"); 
+    kerror("Pure virtual function call"); 
 }

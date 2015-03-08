@@ -1,3 +1,7 @@
+#pragma once
+#include <klibrary/kstring.h>
+#include <klibrary/klibrary.h>
+
 enum class VgaColours
 {
     black,
