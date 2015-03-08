@@ -14,41 +14,41 @@ K_MINUS		-   _
 K_EQUALS		=   +
 K_BACKSPACE 008
 K_TAB		009
-K_Q		Q   q
-K_W		W   w
-K_E		E   e
-K_R		R   r
-K_T		T   t
-K_Y		Y   y
-K_U		U   u
-K_I		I   i
-K_O		O   o
-K_P		P   p
+K_Q		q   Q
+K_W		w   W
+K_E		e   E
+K_R		r   R
+K_T		t   T
+K_Y		y   Y
+K_U		u   U
+K_I		i   I
+K_O		o   O
+K_P		p   P
 K_SQ_BRACKET_OPEN		[   {
 K_SQ_BRACKET_CLOSE		]   }
 K_ENTER		 013
 K_NONE // scan code 30
-K_A		A   a
-K_S		S   s
-K_D		D   d
-K_F		F   f
-K_G		G   g
-K_H		H   h
-K_J		J   j
-K_K		K   k
-K_L		L   l
+K_A		a   A
+K_S		s   S
+K_D		d   D
+K_F		f   F
+K_G		g   G
+K_H		h   H
+K_J		j   J
+K_K		k   K
+K_L		l   L
 K_SEMI_COLON		;       : // scan code 40
 K_APOS		'   "
 K_BACK_SLASH		\   |
 K_ENTER 013 // scan code 43
 K_LSHIFT
-K_Z		Z   z //
-K_X		X   x
-K_C		C   c
-K_V		V   v
-K_B		B   b
-K_N		N   n
-K_M		M   m
+K_Z		z   Z //
+K_X		x   X
+K_C		c   C
+K_V		v   V
+K_B		b   B
+K_N		n   N
+K_M		m   M
 K_COMMA		,   <
 K_DOT		.   >
 K_SLASH		/   ?
