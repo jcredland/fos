@@ -100,16 +100,20 @@ struct KeyEvent
 class KeyEventManager
 {
     public:
-        KeyEventManager()
-        {
-            keyboard = device_manager.get_device_by_name("keyboard"); 
-
-            if (keyboard == nullptr)
-                kerror("KeyEventManager: no keyboard driver found."); 
-        }
-
+        KeyEventManager();
+        /** Return the next keyboard event.  Returns KeyEvent::invalid
+         * if there are no events pending. */
         KeyEvent next();
-
     private:
+        void update_modifiers(KeyboardKeyCode, bool is_key_up); 
+
+
+        bool lctrl; 
+        bool rctrl; 
+
+        bool lshift; 
+        bool rshift; 
+
+        Modifiers current_modifiers;
         Device * keyboard; 
 };

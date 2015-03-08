@@ -17,6 +17,8 @@ class KeyboardHardwareDriver
 public:
     KeyboardHardwareDriver();
     const char* get_device_name() const;
+    /* Returns a KeyboardKeyCode with bit 0x4000 set if it's a 
+     * key up, and 0x8000 set if the buffer was empty. */
     int read_char() override;
     void handle_interrupt (uint8 /* interrupt_number */) override;
 

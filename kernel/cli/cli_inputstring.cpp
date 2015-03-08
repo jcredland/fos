@@ -24,6 +24,9 @@ KString InputString::get_line()
     {
         event = key_events.next(); 
 
+        if (event.key_code == 0)
+            continue;
+
         if (event != KeyEvent::invalid)
         {
             if (event.is_enter_or_return())
@@ -32,6 +35,7 @@ KString InputString::get_line()
             process_event(event); 
             paint(); 
         }
+
     } while (! should_finish); 
    
     history.push_back(data);  

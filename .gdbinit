@@ -6,6 +6,6 @@ set history save on
 set history expansion on
 #layout asm
 b *0x7c00
-symbol-file fos.sym
+symbol-file build/fos.sym
 b *0x8204
 c
