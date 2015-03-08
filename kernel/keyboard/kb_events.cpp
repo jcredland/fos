@@ -13,9 +13,20 @@ KeyEvent KeyEventManager::next()
     if (c == -1)
         return KeyEvent::invalid; 
 
-    KeyEvent e {(KeyboardKeyCode) c, 
-        Modifiers(), 
-        keymap_uk[c].key_without_shift};
+    /* TODO - This bit isn't efficient and we should move to a direct lookup. */
 
-    return e; 
+    for (int i = 0; i < keymap_uk_len; ++i)
+    {
+        auto & map_entry = keymap_uk[i];
+
+        if (map_entry.key_code == (KeyboardKeyCode) c)
+        {
+            KeyEvent e {(KeyboardKeyCode) c, 
+                Modifiers(), 
+                map_entry.key_without_shift};
+
+            return e; 
+        }
+    }
+    return KeyEvent::invalid;
 }

@@ -27,6 +27,8 @@ void VgaDriver::writeln(const KString & ks)
     {
         set_pos(0, y); 
     }
+
+    update_hardware_cursor();
 }
 
 int VgaDriver::get_x() const
@@ -74,6 +76,7 @@ void VgaDriver::putc(char c)
         set_pos(0, 24);
     }
 
+    update_hardware_cursor();
 }
 
 void VgaDriver::set_pos(int x, int y)
@@ -103,11 +106,11 @@ void VgaDriver::get_hardware_cursor_position()
 
 void VgaDriver::update_hardware_cursor()
 {
+    outb(crtc_index_port, CURSOR_LOW);
+    outb(crtc_data_port, (cursor & 0x00000FF)); 
+
     outb(crtc_index_port, CURSOR_HIGH);
     outb(crtc_data_port, (cursor & 0x000FF00) >> 8); 
-    
-    outb(crtc_index_port, CURSOR_LOW);
-    outb(crtc_data_port, (cursor * 0x00000FF)); 
 }
 
 void VgaDriver::unlock_crtc_registers()

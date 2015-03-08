@@ -78,8 +78,8 @@ private:
     enum CRTC
     {
         VGA_MODE = 23,
-        CURSOR_HIGH = 0xF, 
-        CURSOR_LOW = 0xE
+        CURSOR_HIGH = 0xE, 
+        CURSOR_LOW = 0xF
     };
 
     static const uint16 crtc_data_port = 0x3D5; 

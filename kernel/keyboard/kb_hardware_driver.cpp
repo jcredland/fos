@@ -26,9 +26,8 @@ void KeyboardHardwareDriver::handle_interrupt (uint8 /* interrupt_number */)
 {
     uint8_t scan_code = inb (0x60);
 
-    /* TODO - introduce the mapping, and a buffer. */
     if ( (scan_code & 0x80) != 0x80)
-        input_buffer.push(scan_code);
+        input_buffer.push(mac_scancode_map[scan_code]);
 
     Interrupt8259PIC::send_eoi (Interrupt8259PIC::IRQ::KEYBOARD);
 }
