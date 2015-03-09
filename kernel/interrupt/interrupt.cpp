@@ -26,9 +26,10 @@ const char * interrupt_cpu_trap_names[19] =
     "SIMD Floating-Point Exception"
 };
 
-void interrupt_cpu_trap_handler(int trap_number)
+void interrupt_cpu_trap_handler(int trap_number, uint32 error_code)
 {
     kerror("cpu: trap.  cpu halted. trap_number=" + KString( (uint16) trap_number)); 
+    kerror("error code: " + KString(error_code)); 
 
     KString error_message(interrupt_cpu_trap_names[trap_number]); 
 
@@ -37,7 +38,7 @@ void interrupt_cpu_trap_handler(int trap_number)
     while (1) {}
 }
 
-InterruptDriver::InterruptDriver(void(*default_handler)(int))
+InterruptDriver::InterruptDriver(void(*default_handler)(int, uint32))
 {
     memset((char*)idt, 0, sizeof(idt));
 
@@ -85,9 +86,9 @@ extern "C"
  * It may or may not include the error code. If there is no error code then errorCode will
  * be set to zero. 
  */
-void interrupt_handler(uint8_t interrupt_num, uint16_t /* err_code */)
+void interrupt_handler(uint8_t interrupt_num, uint16_t error_code)
 {
-    interrupt_driver.call_handler(interrupt_num);
+    interrupt_driver.call_handler(interrupt_num, error_code);
 }
 }
 

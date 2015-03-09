@@ -13,13 +13,13 @@ ATAControllerPIO::ATAControllerPIO (bool usePrimary)
         if (identify (0, &master_data))
         {
             kdebug ("ide: master drive found");
-            klog_identify_info (master_data);
+//            klog_identify_info (master_data);
         }
 
         if (identify (1, &slave_data))
         {
             kdebug ("ide: slave drive found");
-            klog_identify_info (slave_data);
+//            klog_identify_info (slave_data);
         }
     }
 }

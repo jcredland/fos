@@ -35,6 +35,11 @@ public:
     /** Allocate multiple pages from a contiguous block of memory. If 
      * the number of pages requested couldn't be allocated then this 
      * returns nullptr. 
+     *
+     * Allocates from the lowest memory location upwards. So if you get an
+     * address above one you were after, there wasn't enough memory.  This 
+     * is probably useful information when we are setting up identity paging
+     * for a lower half kernel. 
      */
     void * get_multiple_4k_pages(unsigned number_of_pages_wanted);
     void free_multiple_4k_pages(void * pointer, unsigned number_of_pages_to_free); 

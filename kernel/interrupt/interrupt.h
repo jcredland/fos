@@ -23,7 +23,7 @@ template <int N> static inline void raiseInterrupt (void)
 class InterruptDriver
 {
 public:
-    InterruptDriver(void(*default_handler)(int));
+    InterruptDriver(void(*default_handler)(int, uint32));
     
     enum
     {
@@ -39,7 +39,7 @@ public:
     };
 
     /** Adds a bare C function as an interrupt handler. */
-    void set_handler(int interrupt_num, void(*new_handler)(int))
+    void set_handler(int interrupt_num, void(*new_handler)(int, uint32))
     {
         handler[interrupt_num] = new_handler;
     }
@@ -61,12 +61,12 @@ public:
         asm volatile ( "cli" );
     }
 
-    void call_handler(uint8_t interrupt_num)
+    void call_handler(uint8_t interrupt_num, uint32 error_code)
     {
         if (device_handlers[interrupt_num] != nullptr)
-            device_handlers[interrupt_num]->handle_interrupt(interrupt_num); 
+            device_handlers[interrupt_num]->handle_interrupt(interrupt_num, error_code); 
         else 
-            (*handler[interrupt_num])(interrupt_num);
+            (*handler[interrupt_num])(interrupt_num, error_code);
     }
     
 private:
@@ -93,7 +93,7 @@ private:
         uint16_t baseHi;
     };
     
-    typedef void (*Handler)(int);
+    typedef void (*Handler)(int, uint32);
     
     Handler handler[256];
     DeviceInterruptHandler * device_handlers[256];
@@ -118,6 +118,6 @@ extern "C"
  * It may or may not include the error code. If there is no error code then errorCode will
  * be set to zero. 
  */
-void interrupt_handler(uint8_t interrupt_num, uint16_t /* err_code */);
+void interrupt_handler(uint8_t interrupt_num, uint16_t error_code);
 }
 

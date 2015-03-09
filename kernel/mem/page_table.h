@@ -1,70 +1,58 @@
 #pragma once
 #include <klibrary/klibrary.h>
 #include <mem/physical.h>
+#include <mem/kmalloc.h>
 
 /* 
  * From the intel documentation:
  *
- All three paging modes translate linear addresses use hierarchical
- paging structures. This section provides an overview of their
- operation. Section 4.3, Section 4.4, and Section 4.5 provide details
- for the three paging modes.
+ All three paging modes translate linear addresses use hierarchical paging structures.
+ This section provides an overview of their operation. Section 4.3, Section 4.4,
+ and Section 4.5 provide details for the three paging modes.
 
- Every paging structure is 4096 Bytes in size and comprises a
- number of individual entries. With 32-bit paging, each entry is
- 32 bits (4 bytes); there are thus 1024 entries in each structure.
- With PAE paging and IA-32e paging, each entry is 64 bits (8 bytes);
- there are thus 512 entries in each structure.  (PAE paging includes
- one exception, a paging structure that is 32 bytes in size,
- containing 4 64-bit entries.)
+ Every paging structure is 4096 Bytes in size and comprises a number of individual
+ entries.  With 32-bit paging, each entry is 32 bits (4 bytes); there are thus
+ 1024 entries in each structure.  With PAE paging and IA-32e paging, each entry
+ is 64 bits (8 bytes); there are thus 512 entries in each structure.  (PAE paging
+ includes one exception, a paging structure that is 32 bytes in size, containing
+ 4 64-bit entries.)
 
- The processor uses the upper portion of a linear address to
- identify a series of paging-structure entries. The last of these
- entries identifies the physical address of the region to which the
- linear address translates (called the page frame). The lower portion
- of the linear address (called the page offset) identifies the
- specific address within that region to which the linear address
- translates.
+ The processor uses the upper portion of a linear address to identify a series of
+ paging-structure entries. The last of these entries identifies the physical address
+ of the region to which the linear address translates (called the page frame). The
+ lower portion of the linear address (called the page offset) identifies the
+ specific address within that region to which the linear address translates.
 
- Each paging-structure entry contains a physical address, which is
- either the address of another paging structure or the address of
- a page frame. In the first case, the entry is said to reference
- the other paging structure; in the latter, the entry is said to
- map a page.
+ Each paging-structure entry contains a physical address, which is either the
+ address of another paging structure or the address of a page frame. In the first
+ case, the entry is said to reference the other paging structure; in the latter,
+ the entry is said to map a page.
 
- The first paging structure used for any translation is located at
- the physical address in CR3. A linear address is translated using
- the following iterative procedure. A portion of the linear address
- (initially the uppermost bits) select an entry in a paging structure
- (initially the one located using CR3). If that entry references
- another paging structure, the process continues with that paging
- structure and with the portion of the linear address immediately
- below that just used. If instead the entry maps a page, the process
- completes: the physical address in the entry is that of the page
- frame and the remaining lower portion of the linear address is the
- page offset.
+ The first paging structure used for any translation is located at the physical
+ address in CR3. A linear address is translated using the following iterative
+ procedure. A portion of the linear address (initially the uppermost bits) select
+ an entry in a paging structure (initially the one located using CR3). If that
+ entry references another paging structure, the process continues with that paging
+ structure and with the portion of the linear address immediately below that just
+ used. If instead the entry maps a page, the process completes: the physical address
+ in the entry is that of the page frame and the remaining lower portion of the
+ linear address is the page offset.
  */
 
 /* The default mode is non-PAE paging. */
+
+/** Short assembly routines. */
 extern "C" {
-void paging_enable();
-
-
+    /** Turn paging on. */
+    void paging_enable();
+    /** Set the CR3 register (contains the page directory). */
+    void paging_set_address(uintptr_t); 
 };
 
 template <typename T>
-void check_page_alignment(T * ptr)
+void check_page_alignment(T ptr)
 {
     uintptr_t p = (uintptr_t) ptr; 
-    if ((p & 0xFFFFFF000) != p)
-    {
-        kerror("page alignment problem. halting."); 
-        while (1) {}
-    }
-}
-
-void check_page_alignment(uintptr_t p)
-{
     if ((p & 0xFFFFFF000) != p)
     {
         kerror("page alignment problem. halting."); 
@@ -83,16 +71,11 @@ class PageTable32
             check_page_alignment(this); 
         }
 
-        /* Handy definition from 
-           http://www.jamesmolloy.co.uk/tutorial_html/6.-Paging.html 
-           
-           Actually - this doesn't look right!  See tables 4-5 and 4-6 of the
-           intel processor manual. Seems to be mssing PWT and PCD.
-
-           */
         struct Entry 
         {
             Entry()
+                :
+                    value(0)
             {}
             void set_physical_address(uintptr_t physical_address)
             {
@@ -105,6 +88,10 @@ class PageTable32
                     value = (value & 0xFFFFFFFE) | 1; 
                 else
                     value = (value & 0xFFFFFFFE); 
+            }
+            bool is_present() const
+            {
+                return (value & 0x1) == 1; 
             }
             uint32 value;
         };
@@ -161,33 +148,61 @@ class PageDirectory32
         Entry data[1024];
 };
 
-class PagingManager
+/** 
+ * Paging manager deals with the configuration of an Intel processors virtual memory 
+ * paging.  
+ *
+ * Presumably there is not way of writing to a page table when it's not mapping into 
+ * virtual memory space, but that the tables continue to operate even if they aren't 
+ * accessible to the running code. 
+ *
+ * So the first pages for the kernel need to be allocated with the physical memory 
+ * manager into identity mapped space.  After that we can just allocated from the
+ * kernel's heap. 
+ */
+class IntelPageMap
 {
     public:
-        PagingManager()
+        IntelPageMap()
         {
-            setup_inital_paging(); 
-            paging_enable(); 
+            page_dir = new ((PageDirectory32 *) pmem.get_4k_page()) PageDirectory32();
+            ::paging_set_address(reinterpret_cast<uintptr_t>(page_dir)); 
         }
 
-        void setup_inital_paging()
-        { 
-            page_dir = new ((PageDirectory32 *) pmem.get_4k_page()) PageDirectory32();
+        /** 
+         * Calls a short asm routine to enable paging on the CPU. 
+         */
+        void enable_paging() 
+        {
+            kdebug("paging: about to enable"); 
+            ::paging_enable(); 
+            kdebug("paging: enabled"); 
         }
+
 
         /** 
          * Maps a linear address to a page.  
          *
          * The physical_address must be page aligned. 
+         *
+         * Returns the physical address of the page table that the memory allocation 
+         * was assigned to.  This might be useful information when setting up 
+         * identity mapping.
+         *
+         * Returns nullptr if there was some kind of error. 
          */
-        void map_page(uintptr_t linear_address, uintptr_t physical_address)
+        PageTable32 * map_page(uintptr_t linear_address, uintptr_t physical_address)
         {
             PageTable32 * table = nullptr; 
             auto & dir_entry = (*page_dir)[get_page_dir_index(linear_address)];
 
             if (! dir_entry.is_present())
             {
-                table = reinterpret_cast<PageTable32 *>(pmem.get_4k_page());
+                table = reinterpret_cast<PageTable32 *>(pmem.get_4k_page_ident_mapped());
+                
+                if (! table)
+                    return nullptr;
+
                 dir_entry.set_linked_table(table); 
                 dir_entry.set_present(true); 
             }
@@ -199,7 +214,33 @@ class PagingManager
             auto & table_entry = (*table)[get_page_table_index(linear_address)];
             table_entry.set_physical_address(physical_address); 
             table_entry.set_present(true); 
+
+            return table;
         }
+
+        /* Each table maps 4Mb. This function can be used to get empty PageTable32
+         * objects. */
+        PageTable32 * create_empty_table(int entry_number)
+        {
+            auto & dir_entry = (*page_dir)[entry_number];
+            if (dir_entry.is_present())
+            {
+                kerror("halted: empty table requested but was already mapped"); 
+                while (1) {}
+            }
+
+            PageTable32 * table = reinterpret_cast<PageTable32 *>(pmem.get_4k_page_ident_mapped());
+                
+            if (! table)
+                return nullptr;
+
+            dir_entry.set_linked_table(table); 
+            dir_entry.set_present(true); 
+
+            return table;
+        }
+
+        void free_page(uintptr_t linear_address);
 
     private:
         /* INTEL: If a paging-structure entry maps a page when more than
@@ -221,6 +262,7 @@ class PagingManager
         }
 
         PageDirectory32 * page_dir;
-
-
 };
+
+void page_fault_handler();
+

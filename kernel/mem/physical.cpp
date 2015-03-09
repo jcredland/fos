@@ -149,7 +149,6 @@ void * PhysicalMemoryManager::get_multiple_4k_pages(unsigned num_pages_required)
         }
 
         unsigned char mem_table_entry = memory_allocations[mem_table_index];
-        kdebug(KString("mem_table_entry: ") + KString(uint8(mem_table_entry)));
 
         if (num_pages_found > 0)
         {

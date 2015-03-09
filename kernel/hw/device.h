@@ -5,7 +5,7 @@ class DeviceInterruptHandler
 {
 public:
     virtual ~DeviceInterruptHandler() {}
-    virtual void handle_interrupt(uint8 interrupt_number) = 0; 
+    virtual void handle_interrupt(uint8 interrupt_number, uint32 error_code) = 0; 
 };
 /** 
  * A device is something that can be accessed from user or kernel land. 

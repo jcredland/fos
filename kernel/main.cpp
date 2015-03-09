@@ -23,21 +23,22 @@ void halt ()
     while (1) {}
 }
 
-void default_interrupt_handler (int interruptNumber)
+void default_interrupt_handler (int interruptNumber, uint32 error_code)
 {
     KString message ("interrupt: unhandled interrupt ");
     message.append_hex ( (uint32_t) interruptNumber);
+    kdebug("err code: "); 
+    message.append_hex ( (uint32_t) error_code);
     kerror (message);
     halt();
 }
 
-
-void interrupt_generic (int)
+void interrupt_generic (int, uint32)
 {
     vga.write (1, 15, "Interrupt Handler Called");
 }
 
-void interrupt_system_timer (int)
+void interrupt_system_timer (int, uint32)
 {
     timer.timer++;
     Interrupt8259PIC::send_eoi (Interrupt8259PIC::IRQ::SYSTEM_TIMER);
@@ -72,6 +73,7 @@ VgaDriver               vga;
 InterruptDriver         interrupt_driver (default_interrupt_handler);
 Timer                   timer;
 PhysicalMemoryManager   pmem; 
+VirtualMemoryManager    vmem;
 MemoryPool<64>          kheap;
 /* Things that require the heap to be available can now be started. */
 DeviceManager           device_manager;
@@ -95,6 +97,7 @@ public:
     {
         kdebug("Launching CLI.");
         cli_register_command(&pmem); 
+        cli_register_command(&vmem); 
         cli_main(); 
     }
 

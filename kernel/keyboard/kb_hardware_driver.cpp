@@ -22,7 +22,7 @@ int KeyboardHardwareDriver::read_char()
         return input_buffer.next(); 
 }
 
-void KeyboardHardwareDriver::handle_interrupt (uint8 /* interrupt_number */) 
+void KeyboardHardwareDriver::handle_interrupt (uint8 /* interrupt_number */, uint32 /* err code */) 
 {
     uint8_t scan_code = inb (0x60);
 
