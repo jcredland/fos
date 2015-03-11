@@ -75,7 +75,12 @@ public:
         *end_ptr++ = object;
     }
 
-    T & operator[] (size_t pos)
+    const T & operator[] (size_t pos) const
+    {
+        return begin_ptr[pos]; 
+    }
+    
+    T & operator[] (size_t pos) 
     {
         return begin_ptr[pos]; 
     }

@@ -55,6 +55,47 @@ class ProcessMemoryMap
             return  new_region;
         }
 
+        /** Returns a free MemoryRange, that can be used for configuring a memory region, with the 
+         * size required and constrained to the specified MemoryRange. This function could do best
+         * fit but currently does first fit. */
+        MemoryRange get_free_memory_range(size_t size_required, const MemoryRange & constrained_within)
+        {
+            uintptr_t ptr = constrained_to.base_addr();
+            MemoryRegion * c; 
+
+            while (nullptr != (c = get_region_at_or_above(ptr)))
+            {
+                if ((c->base_addr() - ptr) >= size_required)
+                    return MemoryRange(ptr, ptr + size_required); 
+
+                ptr = c->end_addr(); 
+            }
+        }
+
+        /** Because our array isn't sorted we use this horrible function.  It'd be nice to add allocator
+         * selection to the vector implementation and then use some nice STL generic programming for this
+         * task.  TODO over a coffee sometime. */
+        MemoryRegion * get_region_at_or_above(uintptr_t more_than)
+        {
+            int region_number = -1;
+            uintptr_t lowest_addr = 0xFFFFFFFF; 
+
+            for (int i = 0; i < region_count; ++i)
+            {
+                uintptr_t addr = regions[i]->base_addr();
+                if ((addr < lowest_addr) && (addr >= more_than))
+                {
+                    lowest_addr = addr; 
+                    region_number = i;
+                }
+            }
+
+            if (i != -1)
+                return regions[i];
+            else 
+                return nullptr;
+        }
+
         void display_debug() const;
 
     private:
@@ -69,3 +110,5 @@ class ProcessMemoryMap
         MemoryRegion * regions[kMaxRegions];
         int region_count; 
 };
+
+

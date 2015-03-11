@@ -1,6 +1,8 @@
 #pragma once
 #include <std_headers.h>
+#include <klibrary/klibrary.h>
 #include <disk/storage_driver.h>
+#include <cli/cli.h>
 
 /** The most boring of file systems to get started. But FAT16 can be 
  * written to by MacOS so it'll be handy 
@@ -12,6 +14,8 @@
  *
  * */
 class Fat16
+:
+    public CliCommand
 {
 public:
     /* http://www.maverick-os.dk/FileSystemFormats/FAT16_FileSystem.html
@@ -252,6 +256,8 @@ public:
             initalize_locations_table();
         else 
             kerror("fat16: file system not valid.");
+
+        cli_register_command(this);
     }
 
     bool is_valid() { return filesystem_is_valid; }
@@ -261,6 +267,11 @@ public:
         /* What's this minus 2 for? */
         return bs.sectors_per_cluster * (cluster - 2) + loc.data_start; 
     }
+
+    /* CLI functions. */
+    bool is_command_supported(const KString & cmd) override;
+    int execute_cli_command(const kstd::kvector<KString> & param_list) override;
+    void execute_dir(const kstd::kvector<KString> & param_list);
 
 private:
     int dir_reader_pointer;
@@ -354,6 +365,8 @@ private:
     {
         fat16_assert (device.read ((char*)&bs, start_block), "failed to read boot record");
     }
+
+
 
 
     bool assert_has_failed;

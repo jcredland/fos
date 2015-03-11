@@ -5,6 +5,7 @@
  */ 
 
 const uintptr_t kPageSize = 0x1000; 
+const uintptr_t kThreadStackSize = 0x4000; /* 16kb. */
 
 struct MemoryRange 
 {

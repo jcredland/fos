@@ -1,5 +1,6 @@
 #pragma once
 #include <mem/memory_region.h>
+#include <cli/cli.h>
 
 /** Kernel memory allocation functions. 
  *
@@ -7,6 +8,8 @@
  */
 template <typename Allocation>
 class MemoryPool
+:
+    public CliCommand
 {
 public:
     /** Allocation is a type that has the following functions: 
@@ -174,11 +177,38 @@ public:
         return largest_block;
     }
 
+    int count_of_free_blocks()
+    {
+        int count = 0;
+        FreeListNode * n = free_list_start;
+        size_t largest_block = 0;
+
+        while (n != nullptr)
+        {
+            count++;
+            n = n->next;
+        }
+        return count;
+    }
+
     void kprint_debug()
     {
-        kdebug("kmalloc: largest free block " + KString(size_largest_free_block()));
-        kdebug("kmalloc: total free space " + KString(size_free()));
+        kdebug("kheap: size               :" + KString((uint32) memory_pool_size));
+        kdebug("kheap: largest free block :" + KString(size_largest_free_block()));
+        kdebug("kheap: total free space   :" + KString(size_free()));
+        kdebug("kheap: free block count   :" + KString((uint32) count_of_free_blocks()));
     };
+
+    
+    bool is_command_supported(const KString & cmd) override
+    {
+        return cmd == "kheap"; 
+    }
+
+    int execute_cli_command(const kstd::kvector<KString> & params) override
+    {
+        kprint_debug(); 
+    }
 
 private:
     struct FreeListNode
@@ -213,4 +243,4 @@ private:
     FreeListNode * free_list_start = nullptr;
 };
 
-
+    

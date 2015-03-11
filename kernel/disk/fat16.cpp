@@ -1,5 +1,7 @@
 
 #include <disk/fat16.h>
+#include <klibrary/klibrary.h>
+
 
 /************************************************************/
 
@@ -138,3 +140,36 @@ bool Fat16::File::go_to_next_cluster()
         return true;
     }
 }
+
+const int num_commands = 3;
+const char * supported_commands[num_commands] = { "dir", "cd", "type" };
+
+bool Fat16::is_command_supported(const KString & cmd)
+{
+    for (int i = 0; i < num_commands; ++i)
+        if (cmd == supported_commands[i])
+            return true; 
+
+    return false;
+}
+
+void Fat16::execute_dir(const kstd::kvector<KString> & param_list)
+{
+    Fat16::Directory dir(*this); 
+    Fat16::DirectoryEntry entry; 
+
+    while (dir.next(&entry) == DiskResultCode::SUCCESS)
+    {
+        KString attrib = entry.get_attrib_string();
+        kdebug(entry.get_full_name() + " [" + attrib + "]");
+        khex_dump(entry.name, 8); 
+        kdebug(entry.first_cluster); 
+    }
+}
+
+int Fat16::execute_cli_command(const kstd::kvector<KString> & param_list)
+{
+    if (param_list[0] == "dir")
+        execute_dir(param_list); 
+}
+

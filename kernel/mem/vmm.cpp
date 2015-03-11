@@ -83,4 +83,9 @@ MemoryRegion* VirtualMemoryManager::get_kernel_heap_region()
     return kernel_heap_region;
 }
 
+ProcessMemoryMap* VirtualMemoryManager::get_kernel_memory_map ()
+{
+    return kernel_memory_map;
+}
+
 

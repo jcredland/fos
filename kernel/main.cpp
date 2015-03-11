@@ -97,12 +97,23 @@ public:
         kdebug("Launching CLI.");
         cli_register_command(&pmem); 
         cli_register_command(&vmem); 
+        cli_register_command(&kheap); 
         cli_main(); 
     }
 
+    void test_thread()
+    {
+        while (1)
+        {
+            timer.delay_ms(500); 
+            counter++;
+            vga.write(2, 2, KString(counter));
+        }
+    }
+
+
 
 private:
-//    EventWatcher event_watcher (event_queue, vga);
     PciBus pci;
     ATAControllerPIO ata_controller;
     ATADrive ata_drive_kern;
@@ -112,29 +123,10 @@ private:
 
 int main()
 {
-    kdebug ("Welcome to the kernel");
-
     setup_interrupts(); 
-    //test_memory_pool();
 
     Kernel kernel;
-
     kernel.run();
-
-
-//    /** Read the root directory of the file system. */
- //   Fat16::Directory root_dir (fat_fs2);
-  //  Fat16::DirectoryEntry entry;
-
-/*
-    while (root_dir.next (&entry) == DiskResultCode::SUCCESS)
-    {
-        KString name (entry.name, 8);
-        kdebug (KString ("name:") + name + KString ("<:"));
-    }
-
-    kdebug ("done.");
-    */
 
     return 0;
 }
