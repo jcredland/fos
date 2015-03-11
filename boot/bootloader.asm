@@ -5,6 +5,8 @@
     global sectors_to_load
 
 boot:
+    xor bp, bp
+    mov ds, bp
     jmp boot_start
 ;sectors_to_load:
 ;    dw 0
@@ -28,39 +30,61 @@ boot_start:
 ; -------
 ; --- load stage 2
 ; ***
-load_more:
-; - put the drive number in DL
+    call check_int13_extensions
     mov dl, [boot_drive]
-; - head number
-    mov dh, 0
-; - put the number of sectors to load onto the stack
     mov ax, [sectors_to_load]
-    push ax
-; - setup ES:BX as out target (0x7E00)
-    mov bx, 0
-    mov bp, 0x7E0
-    mov es, bp
-; - get the number of sectors to load
-.more:
-    pop ax
-    cmp ax, 80h
-    jle .last
-; - adjust the number of sectors left
-    sub ax, 80h
-    push ax
-    mov ax, 80h
-    call read_disk
-    add bp, 0x1000
-    mov es, bp
-    inc dh
-    inc dh
-    jmp .more
-.last:
-    call read_disk
-; - reset ES.
-    xor bp, bp
-    mov es, bp
+    call read_disk_int13_ext
     jmp main_os_code
+
+; -------------
+; *** check_extensions_present
+; params: DL    drive number
+check_int13_extensions:
+    mov ah, 0x41
+    mov bx, 0x55aa
+    int 0x13
+    jc .notSupported
+    cmp bx, 0xaa55
+    jne .notSupported
+    ret
+.notSupported
+    mov bx, bios_extension_error_string
+    jmp error_and_halt
+
+bios_extension_error_string:
+    db 'No Int13 Ext', 0
+
+; -------------
+; *** read_disk_int13_ext
+; - reads the drive using the int13 extensions. 
+;   see http://www.esapcsolutions.com/ecom/drawings/PhoenixBIOS4_rev6UserMan.pdf
+;
+; params: DL    drive to load from
+;         AX    number of sectors to load
+read_disk_int13_ext:
+    mov [.dapNumSectors], ax
+    mov ah, 0x42
+    mov si, .dap
+    int 0x13
+    jc .error
+    ret
+
+.dap
+    db 0x10 ; size
+    db 0x0  ; reserved
+.dapNumSectors
+    dw 0x0  ; num sectors
+.dapLoadOffset
+    dw 0x0000
+.dapLoadSegment
+    dw 0x07e0
+.dapStartSector
+    dd 0x00000001
+    dd 0x00000000
+    
+.error
+    mov bx, disk_error_string
+    jmp error_and_halt
 
 ; -------------
 ; *** read_disk
@@ -92,6 +116,14 @@ a20_error:
     mov bx, string_a20error
     call bios_print_string
     jmp $
+
+; ---
+; *** bios_error_and_halt
+; params: BX    address of zero terminated error message
+error_and_halt:
+    call bios_print_string
+    jmp $
+    
 
 ; ---
 ; *** bios_print_string

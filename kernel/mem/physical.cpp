@@ -82,7 +82,7 @@ PhysicalMemoryManager::PhysicalMemoryManager()
     reserve_range((uintptr_t) memory_allocations, ma_upper_boundary); 
     /* And reserve our stack. */
     reserve_range(0x3000, 0x4000); 
-    /* @todo: And, shit, we'd better reserve the kernel space too! */
+    /* @todo: And, shit, we'd better reserve the kernel space too! (Pages 7 to 20)*/
     reserve_range(0x7000, 0x20000); 
 
     print_debug(vga);
@@ -145,6 +145,7 @@ void * PhysicalMemoryManager::get_pages(unsigned num_pages_required, unsigned lo
      * - translate the first bit position to a pointer. 
      * - return the pointer.
      */
+    kerror("physical mem: reserving " + KString((uint16) num_pages_required));
     unsigned num_pages_found = 0; 
     unsigned possible_first_page;
    
@@ -159,7 +160,8 @@ void * PhysicalMemoryManager::get_pages(unsigned num_pages_required, unsigned lo
     {
         if (mem_table_index >= highest_entry_to_search)
         {
-            kerror("physical mem: allocation failed, not enough free space"); 
+            kerror("physical mem: allocation failed, not enough free space: " + KString((uint32) mem_table_index) + " num:" + KString((uint32) num_pages_required) + " pg range:" + KString((uint16) lowest_page) + "."+ KString((uint16) highest_page)); 
+            while (1) {}
             return nullptr;
         }
 
