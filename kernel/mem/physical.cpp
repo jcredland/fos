@@ -129,12 +129,16 @@ void * PhysicalMemoryManager::get_4k_page(const PhysicalMemoryRange & range)
     return get_pages(1, bytes_to_pages(range.base), bytes_to_pages(range.end)); 
 }
 
-void * get_multiple_4k_pages (const PhysicalMemoryRange & range, unsigned num_pages)
+MemoryRange PhysicalMemoryManager::get_multiple_4k_pages (const PhysicalMemoryRange & range, unsigned num_pages)
 {
-    return get_pages(num_pages_required, bytes_to_pages(range.base), bytes_to_pages(range.end));  
+    void * ptr = get_pages(num_pages, bytes_to_pages(range.base), bytes_to_pages(range.end));  
+    if (ptr == nullptr)
+        return MemoryRange {0x0, 0x0};
+    else
+        return MemoryRange {(uintptr_t) ptr, num_pages * 0x1000}; 
 }
 
-void * PhysicalMemoryManager::get_multiple_4k_pages(unsigned num_pages_required, unsigned lowest_page, unsigned highest_page)
+void * PhysicalMemoryManager::get_pages(unsigned num_pages_required, unsigned lowest_page, unsigned highest_page)
 {
     /* So, we:
      * - search for the correct number of available bits. 

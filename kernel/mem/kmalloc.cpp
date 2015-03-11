@@ -13,7 +13,7 @@
 void kmalloc_test_memory_pool()
 {
     /* a 32k MemoryPool. */
-    MemoryPool<32> pool;
+    MemoryPool<MemoryRange> pool(pmem.get_multiple_4k_pages(kPRangeGeneral, 32));
     const int kBlockCount = 85; 
     const int kBlockMultiplier = 40; 
     char * blocks[kBlockCount];

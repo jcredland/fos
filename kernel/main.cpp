@@ -11,8 +11,6 @@
 #include <mem/mem.h>
 #include <cli/cli.h>
 
-extern MemoryPool<64> kheap;
-
 #include <disk/disk.h>
 
 /** Applications and utilities. */
@@ -73,9 +71,9 @@ VgaDriver                   vga;
 InterruptDriver             interrupt_driver (default_interrupt_handler);
 Timer                       timer;
 PhysicalMemoryManager       pmem; 
-VirtualMemoryManager        vmem;
-ProcessVirtualMemoryManager kvmm(kNumberOfIdentityMapped4MbSections);
-MemoryPool<64>              kheap;
+VirtualMemoryManager        vmem; // this starts paging up.
+MemoryPool<MemoryRegion>    kheap(*vmem.get_kernel_heap_region());
+
 /* Things that require the heap to be available can now be started. */
 DeviceManager               device_manager;
 

@@ -2,7 +2,7 @@
 #include <mem/kmalloc.h>
 #include <klibrary/new.h>
 
-extern MemoryPool<64> kheap; 
+extern MemoryPool<MemoryRegion> kheap; 
 
 /*
  * Functions we normally take for granted with C++. 

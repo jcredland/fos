@@ -7,6 +7,8 @@
 
 #include "std_types.h"
 
+#define F_NO_COPY(Class)  Class (const Class &) = delete; Class & operator=(const Class &) = delete;
+
 #include <klibrary/klibrary.h>
 #include <mem/mem_layout.h>
 

@@ -49,6 +49,7 @@ makefile-debug:
 .PHONY: clean
 clean:
 	rm -rf *.o */*.o
+	rm -rf *.d */*.d
 
 .PHONY: depclean
 depclean:

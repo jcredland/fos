@@ -25,15 +25,68 @@ boot_start:
     ;call check_a20
     ;cmp ax, 0 ; zero means memory wraps around ...  really we need to handle this
     ;je a20_error
-; load stage 2
-    mov bx, stage2_start - 0x7c00
-    mov bp, 0x7c0
-    mov es, bp
+; -------
+; --- load stage 2
+; ***
+load_more:
+; - put the drive number in DL
     mov dl, [boot_drive]
-    call load_stage_2
+; - head number
+    mov dh, 0
+; - put the number of sectors to load onto the stack
+    mov ax, [sectors_to_load]
+    push ax
+; - setup ES:BX as out target (0x7E00)
+    mov bx, 0
+    mov bp, 0x7E0
+    mov es, bp
+; - get the number of sectors to load
+.more:
+    pop ax
+    cmp ax, 80h
+    jle .last
+; - adjust the number of sectors left
+    sub ax, 80h
+    push ax
+    mov ax, 80h
+    call read_disk
+    add bp, 0x1000
+    mov es, bp
+    inc dh
+    inc dh
+    jmp .more
+.last:
+    call read_disk
+; - reset ES.
     xor bp, bp
     mov es, bp
     jmp main_os_code
+
+; -------------
+; *** read_disk
+; params: ES:BX memory location to load to
+;         DL    drive to load from
+;         AL    number of sectors to load (max 80h)
+;         DH    head number
+;
+; assumes stage 2 is immediately after the first sector.
+;
+; Note: cannot read over a 64k boundary (80h sectors), and to read
+; this number BX must be 0.
+; 
+read_disk:
+    mov ah, 02h
+    mov ch, 0h ; cylinder
+    mov cl, 2h ; sector 2
+    int 13h
+    jc .error
+
+    ret
+.error
+    mov bx, disk_error_string
+    call bios_print_string
+
+    ret ; carry on anyway...
 
 a20_error:
     mov bx, string_a20error
@@ -41,7 +94,7 @@ a20_error:
     jmp $
 
 ; ---
-; bios_print_string
+; *** bios_print_string
 ; call: BX - address of zero terminated string to print
 ; clobbers: BX
 ; returns:
@@ -58,36 +111,7 @@ bios_print_string:
 .end
     pop ax
     ret 
-
-kernel_too_large:
-    mov bx, kernel_too_large_string
-    call bios_print_string
-    jmp $
-kernel_too_large_string:
-    db 'Kernel Too Large', 0
-; ---
-; load_stage_2
-; call: BX memory location to load to; DL drive to load from
-; assumes stage 2 is immediately after the first sector.
-load_stage_2:
-    mov ax, [sectors_to_load]
-    test ah, ah
-    jnz kernel_too_large
-
-    mov ah, 02h
-    ;mov al, 40h ; number of sectors
-    mov ch, 0h ; cylinder
-    mov dh, 0h ; head
-    mov cl, 2h ; sector 2
-    int 13h
-    jc .error
-
-    ret
-.error
-    mov bx, disk_error_string
-    call bios_print_string
-
-    ret ; carry on anyway...
+    
 
 ; ---
 ; setup a20 address line
@@ -158,17 +182,14 @@ global boot_drive
 boot_drive:
     db 0
 
-
-;    times 510-($-$$)    db  0
-
-;    dw 0xaa55 ; magic bios number
-
-section .boot_stage2
-
-stage2_start:
-;; -------------------------------------------------------------------------------
+; -------------------------------------------------------------------------------
 ; END BOOT LOADER
 ; -------------------------------------------------------------------------------
+
+section .boot_stage2
+; This section will be a 0x7e00, directly after the bootloader sector.
+
+stage2_start:
 main_os_code:
     nop 
     nop

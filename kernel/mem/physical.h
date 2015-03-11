@@ -39,8 +39,8 @@ public:
      * the number of pages requested couldn't be allocated then this 
      * returns nullptr. 
      */
-    void * get_multiple_4k_pages (const PhysicalMemoryRange & range_to_allocate_from, 
-                                    unsigned num_pages_required);
+    MemoryRange get_multiple_4k_pages (const PhysicalMemoryRange & range_to_allocate_from, 
+                                       unsigned num_pages_required);
     void free_multiple_4k_pages(void * pointer, unsigned number_of_pages_to_free); 
 
     /** Free up some memory pages previously allocated with allocate_page. */
