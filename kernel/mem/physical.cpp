@@ -124,12 +124,17 @@ void PhysicalMemoryManager::mark_used(int page_number)
     memory_allocations[index] = memory_allocations[index] | (1 << bit); 
 }
 
-void * PhysicalMemoryManager::get_4k_page()
+void * PhysicalMemoryManager::get_4k_page(const PhysicalMemoryRange & range)
 {
-    return get_multiple_4k_pages(1); 
+    return get_pages(1, bytes_to_pages(range.base), bytes_to_pages(range.end)); 
 }
 
-void * PhysicalMemoryManager::get_multiple_4k_pages(unsigned num_pages_required)
+void * get_multiple_4k_pages (const PhysicalMemoryRange & range, unsigned num_pages)
+{
+    return get_pages(num_pages_required, bytes_to_pages(range.base), bytes_to_pages(range.end));  
+}
+
+void * PhysicalMemoryManager::get_multiple_4k_pages(unsigned num_pages_required, unsigned lowest_page, unsigned highest_page)
 {
     /* So, we:
      * - search for the correct number of available bits. 
@@ -138,11 +143,17 @@ void * PhysicalMemoryManager::get_multiple_4k_pages(unsigned num_pages_required)
      */
     unsigned num_pages_found = 0; 
     unsigned possible_first_page;
-    
-    unsigned mem_table_index = 0;
+   
+    kassert(lowest_page % 8 == 0); 
+    unsigned highest_entry_to_search = highest_page / 8; 
+
+    if (highest_page > memory_allocation_size)
+        highest_entry_to_search = memory_allocation_size;
+
+    unsigned mem_table_index = lowest_page / 8;
     while (num_pages_found < num_pages_required)
     {
-        if (mem_table_index >= memory_allocation_size)
+        if (mem_table_index >= highest_entry_to_search)
         {
             kerror("physical mem: allocation failed, not enough free space"); 
             return nullptr;

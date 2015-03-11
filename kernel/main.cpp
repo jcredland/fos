@@ -69,14 +69,15 @@ void setup_interrupts()
  * register device drivers and display diagnostic messages as required. 
  */ 
 
-VgaDriver               vga; 
-InterruptDriver         interrupt_driver (default_interrupt_handler);
-Timer                   timer;
-PhysicalMemoryManager   pmem; 
-VirtualMemoryManager    vmem;
-MemoryPool<64>          kheap;
+VgaDriver                   vga; 
+InterruptDriver             interrupt_driver (default_interrupt_handler);
+Timer                       timer;
+PhysicalMemoryManager       pmem; 
+VirtualMemoryManager        vmem;
+ProcessVirtualMemoryManager kvmm(kNumberOfIdentityMapped4MbSections);
+MemoryPool<64>              kheap;
 /* Things that require the heap to be available can now be started. */
-DeviceManager           device_manager;
+DeviceManager               device_manager;
 
 
 class Kernel

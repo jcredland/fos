@@ -1,5 +1,6 @@
 #pragma once
 #include <std_headers.h>
+#include <mem/mem_layout.h>
 #include <cli/cli.h>
 
 /* see ACPIspec40a.pdf */
@@ -28,30 +29,28 @@ public:
     /** Displays memory debug information. */
     void print_debug(VgaDriver & vga);
 
-    /** Allocate page requests a 4kb RAM page.  
-     * A nullptr return suggests that the memory couldn't be found. */
-    void * get_4k_page();
-
-    /** Allocate multiple pages from a contiguous block of memory. If 
+    /** Allocate page requests a 4kb RAM page from the physical memory
+     * range specified.
+     * @returns nullptr on failure, probably out of memory. 
+     */
+    void * get_4k_page(const PhysicalMemoryRange & range_to_allocate_from);
+    /** 
+     * Allocate multiple pages from a contiguous block of memory. If 
      * the number of pages requested couldn't be allocated then this 
      * returns nullptr. 
-     *
-     * Allocates from the lowest memory location upwards. So if you get an
-     * address above one you were after, there wasn't enough memory.  This 
-     * is probably useful information when we are setting up identity paging
-     * for a lower half kernel. 
      */
-    void * get_multiple_4k_pages(unsigned number_of_pages_wanted);
+    void * get_multiple_4k_pages (const PhysicalMemoryRange & range_to_allocate_from, 
+                                    unsigned num_pages_required);
     void free_multiple_4k_pages(void * pointer, unsigned number_of_pages_to_free); 
 
-    /** Free up some memory pages previously allocated with allocate_page. 
-     */
+    /** Free up some memory pages previously allocated with allocate_page. */
     void free_page(void * pointer);
 
     bool is_command_supported(const KString & cmd); 
     int execute_cli_command(const kstd::kvector<KString> & parameter_list);
 
 private:
+    void * get_pages(unsigned number_of_pages_wanted, unsigned lowest_page, unsigned highest_page);
     /** Looks inside a byte for length_required free bits.  If found returns
      * the index of the lowest cleared bit.  If not found returns -1. */
     int get_index_of_continuous_clear_bits(unsigned char byte, unsigned length_required);

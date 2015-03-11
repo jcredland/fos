@@ -8,6 +8,7 @@
 #include "std_types.h"
 
 #include <klibrary/klibrary.h>
+#include <mem/mem_layout.h>
 
 #ifdef FOS_MOCK
 /* Fake drivers. */

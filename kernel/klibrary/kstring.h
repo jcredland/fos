@@ -1,18 +1,34 @@
 #pragma once 
 #include <std_types.h>
-/** A simple string function that isn't dependent on kmalloc being available.  Limited to a fixed number of characters. */
+/** A simple string function that isn't dependent on kmalloc being 
+ * available.  Limited to a fixed number of characters. */
 class KString
 {
 public:
+    enum 
+    {
+        StringLen = 128
+    };
     KString()
     {
         buf[0] = 0;
-        buf[MAX_STRING_LENGTH] = 0;
+        buf[StringLen] = 0;
     }
 
     KString (const char* string)
     {
-        copy_from (buf, string, MAX_STRING_LENGTH);
+        copy_from (buf, string, StringLen);
+    }
+
+    KString (const KString & rhs)
+    {
+        copy_from (buf, rhs.buf, StringLen);
+    }
+
+    template<typename OtherString>
+    KString (const OtherString & rhs)
+    {
+        copy_from (buf, rhs.buf, StringLen);
     }
 
     /** Copy at most maxLength characters from a buffer string to the KString.
@@ -21,14 +37,14 @@ public:
      * */
     KString (const char* string, int maxLength)
     {
-        if (maxLength < MAX_STRING_LENGTH)
+        if (maxLength < StringLen)
         {
             buf[maxLength] = 0;
             copy_from (buf, string, maxLength);
         }
         else
         {
-            copy_from (buf, string, MAX_STRING_LENGTH);
+            copy_from (buf, string, StringLen);
         }
     }
 
@@ -75,7 +91,7 @@ public:
     {
         int len = length();
 
-        if (len >= MAX_STRING_LENGTH)
+        if (len >= StringLen)
             return;
 
         buf[len] = c;
@@ -108,12 +124,7 @@ public:
         tb[num_digits + blanks] = 0;
 
         int len = length();
-        copy_from (buf + len, tb, MAX_STRING_LENGTH - len);
-    }
-
-    KString (const KString& rhs)
-    {
-        copy_from (buf, rhs.get(), MAX_STRING_LENGTH);
+        copy_from (buf + len, tb, StringLen - len);
     }
 
     KString& operator+ (const KString& rhs)
@@ -155,7 +166,7 @@ public:
     void append (const KString& rhs)
     {
         int len = length();
-        copy_from (buf + len, rhs.get(), MAX_STRING_LENGTH - len);
+        copy_from (buf + len, rhs.get(), StringLen - len);
     }
 
     /** Remove a single character from the end of the string. */
@@ -193,8 +204,6 @@ public:
         return c == ' ' || c == '\t';
     }
 
-    enum { MAX_STRING_LENGTH = 200 };
-
     /** Returns the length of the string. */
     int length() const
     {
@@ -228,7 +237,7 @@ private:
         }
     }
 
-    char buf[MAX_STRING_LENGTH + 1];
+    char buf[StringLen + 1];
 };
 
 

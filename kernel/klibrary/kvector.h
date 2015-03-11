@@ -82,8 +82,6 @@ public:
 
     iterator erase(const iterator first, const iterator last)
     {
-//        kassert(first <= last); 
-
         if (first != last)
         {
             auto num_to_move = end_ptr - last;

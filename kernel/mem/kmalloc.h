@@ -1,19 +1,39 @@
 #pragma once
 
 #include <mem/physical.h>
+#include <mem/virtual.h>
+
+extern ProcessVirtualMemoryManager kvmm;
 
 /** @file Kernel memory allocation routines. 
  *
  * @class MemoryPool provides a memory block directly from physical memory with 
  * malloc and free functions to allow it ot be subdivided. 
- * */
-template <int size_to_allocate_in_4kb_pages, int alignment = 16>
+ *
+ * The allocator is any object that supports two functions: 
+ *
+ *  void * get_4k_pages(int size_in_pages);
+ *  void free_4k_pages(void * ptr, int size_in_pages);
+ *
+ * And may eventually need to support: 
+ *
+ *  bool resize_allocation(int new_total_pages); 
+ *
+ * Which will add new memory space or remove it from the end of the
+ * allocation.  If this isn't supported by the allocator it can just
+ * return false, and the allocator will provide an out-of-memory 
+ * error. 
+ *
+ */
+template <typename PageAllocatorType, int size_to_allocate_in_4kb_pages, int alignment = 16>
 class MemoryPool
 {
 public:
-    MemoryPool()
+    MemoryPool(PageAllocatorType & page_allocator)
+        :
+            allocator(page_allocator)
     {
-        memory_pool = (char*) pmem.get_multiple_4k_pages(size_to_allocate_in_4kb_pages);
+        memory_pool = (char*) allocator.get_4k_pages(size_to_allocate_in_4kb_pages);
 
         kdebug("Pool start addr" + KString((uint32) memory_pool)); 
 
@@ -28,7 +48,7 @@ public:
 
     ~MemoryPool()
     {
-        pmem.free_multiple_4k_pages(memory_pool, size_to_allocate_in_4kb_pages); 
+        allocator.free_4k_pages(memory_pool, size_to_allocate_in_4kb_pages); 
     }
 
     /** 
@@ -200,6 +220,8 @@ private:
     {
         return (size + alignment_minus_one) & alignment_mask;
     }
+
+    PageAllocatorType & allocator;
 
     constexpr static size_t block_header_size = align_up(sizeof(BlockHeader));
     constexpr static size_t alignment_minus_one = alignment - 1;
