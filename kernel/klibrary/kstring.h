@@ -25,11 +25,12 @@ public:
         copy_from (buf, rhs.buf, StringLen);
     }
 
-    template<typename OtherString>
+/*    template<typename OtherString>
     KString (const OtherString & rhs)
     {
         copy_from (buf, rhs.buf, StringLen);
-    }
+    } */
+
 
     /** Copy at most maxLength characters from a buffer string to the KString.
      * If the limit is reached before a null terminating character then a null
@@ -127,11 +128,12 @@ public:
         copy_from (buf + len, tb, StringLen - len);
     }
 
-    KString& operator+ (const KString& rhs)
+/*    KString& operator+ (const KString& rhs) const
     {
-        append (rhs);
+        KString n(*this);kk
+            append (rhs);
         return *this;
-    }
+    } */
 
     KString& operator+= (const KString& rhs)
     {
@@ -241,8 +243,15 @@ private:
 };
 
 
+inline KString operator+(const KString & lhs, const KString & rhs)
+{
+    KString n(lhs); 
+    n.append(rhs);
+    return n;
+}
 inline KString operator+(const char * lhs, const KString & rhs)
 {
     return KString(lhs) + rhs; 
 }
+
 

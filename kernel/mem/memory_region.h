@@ -25,6 +25,7 @@ class MemoryRegion
 
         void set_range(const MemoryRange & r)
         {
+            kdebug("memoryregion: set range " + r.to_string()); 
             range = r;
         }
 
@@ -48,6 +49,8 @@ class MemoryRegion
         /** Sets the is_mapped flag to true without actually attempting to 
          * allocate any memory. */
         void set_reserve_only(); 
+
+        void display_debug() const;
 
         MemoryRegion * clone_as_copy_on_write(ProcessMemoryMap * new_owner); 
         MemoryRegion * clone_with_zero_size(ProcessMemoryMap * new_owner); 

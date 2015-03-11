@@ -84,7 +84,8 @@ read_disk_int13_ext:
     
 .error
     mov bx, disk_error_string
-    jmp error_and_halt
+    ;jmp error_and_halt
+    ret
 
 ; -------------
 ; *** read_disk

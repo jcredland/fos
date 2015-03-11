@@ -1,4 +1,5 @@
 #pragma once
+#include <klibrary/kstring.h>
 /**
  * Basic functions and constants that specify our memory layout. 
  */ 
@@ -10,7 +11,11 @@ struct MemoryRange
     uintptr_t base; 
     uintptr_t end; 
     uintptr_t base_addr() const { return base; }
-    uintptr_t size() const { return base - end; }
+    uintptr_t size() const { return end - base; }
+    KString to_string() const
+    {
+        return KString((uint32)base) + " to " + KString((uint32)end);
+    }
 }; 
 
 struct PhysicalMemoryRange 
@@ -18,7 +23,7 @@ struct PhysicalMemoryRange
     uintptr_t base; 
     uintptr_t end; 
     uintptr_t base_addr() const { return base; }
-    uintptr_t size() const { return base - end; }
+    uintptr_t size() const { return end - base; }
 }; 
 
 
@@ -27,7 +32,7 @@ struct PhysicalMemoryRange
 /*** PHYSICAL MEMORY ***/
 const PhysicalMemoryRange  kPRangeBaseMemory       { 0x0,          0x100000 }; 
 const PhysicalMemoryRange  kPRangePageDirectory    { 0x100000,     0x400000 }; 
-const PhysicalMemoryRange  kPRangeGeneral          { 0x400000,   0xFFFFFFFF }; 
+const PhysicalMemoryRange  kPRangeGeneral          { 0x400000,   0xFFFFF000 };  /* should be FFF but we deal in pages. */
 
 /****************************************/
 /*** KERNEL MEMORY SPACE DEFINITIONS. ***/

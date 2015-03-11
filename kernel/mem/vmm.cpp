@@ -27,12 +27,15 @@ void VirtualMemoryManager::build_kernel_memory_map()
     {
         MemoryRegion* r = kernel_memory_map->create_memory_region();
         r->set_range (kIdentityMappedRange);
+        r->set_name("identity mapped, reserved"); 
         r->set_privileged (true);
         r->apply_identity_mapping(); 
     }
 
     {
         MemoryRegion* r = kernel_memory_map->create_memory_region();
+        r->set_name("kernel heap"); 
+        r->set_privileged (true);
         r->set_range (kVRangeKernelHeap);
         r->set_initial_size (kVRangeKernelHeap.size());
         r->set_privileged (true);
@@ -70,7 +73,8 @@ bool VirtualMemoryManager::is_command_supported (const KString& command)
 
 int VirtualMemoryManager::execute_cli_command (const kstd::kvector<KString>& parameter_list)
 {
-    vga.write ("vmm test and info");
+    vga.write ("vmm: kernel memory map");
+    kernel_memory_map->display_debug(); 
     return 0;
 }
 

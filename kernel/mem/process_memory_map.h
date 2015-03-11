@@ -55,6 +55,8 @@ class ProcessMemoryMap
             return  new_region;
         }
 
+        void display_debug() const;
+
     private:
         void destroy_memory_region(MemoryRegion * r)
         {

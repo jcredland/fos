@@ -10,7 +10,7 @@ SECTIONS
     .boot_data : 
     {
         sectors_to_load = .;
-        SHORT((_data_end - 0x7C00) / 512 -1) ;
+        SHORT((_data_end - 0x7C00) / 512 +1) ;
     }
     . = 0x7c20;
     .boot  :

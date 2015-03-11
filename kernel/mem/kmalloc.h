@@ -17,7 +17,7 @@ public:
     {
         memory_pool = (char*) region_to_use.base_addr(); 
 
-        kdebug("Pool start addr" + KString((uint32) memory_pool)); 
+        kdebug("memorypool: constructing with start_addr: " + KString((uint32) memory_pool)); 
 
         memory_pool_size = region_to_use.size();
 

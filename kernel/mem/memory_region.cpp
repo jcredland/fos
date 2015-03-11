@@ -4,23 +4,16 @@
 #include <mem/process_memory_map.h>
 #include <mem/memory_region.h>
 
-MemoryRegion::MemoryRegion(ProcessMemoryMap * owner)
+MemoryRegion::MemoryRegion(ProcessMemoryMap * _owner)
     :
         current_size(0),
         mapped(false),
         privileged(false)
 {
-    owner = owner; 
+    owner = _owner; 
     mapper = owner->get_page_mapper(); 
 }
 
-
-
-KString MemoryRegion::to_debug_string()
-{
-    return name + " " + KString(base_addr()) + " size:" + KString(size()); 
-}
-        
 void MemoryRegion::allocate_and_map()
 {
     if (mapped)
@@ -30,6 +23,8 @@ void MemoryRegion::allocate_and_map()
     }
 
     uintptr_t e = current_size + range.base;
+    kdebug("memoryregion: mapping " + KString(range.base)); 
+    kdebug("memoryregion: current size " + KString(current_size)); 
 
     for (uintptr_t virt_addr = range.base; virt_addr < e; virt_addr += kPageSize)
     {
@@ -62,4 +57,7 @@ void MemoryRegion::set_reserve_only()
     mapped = true;
 }
 
-
+void MemoryRegion::display_debug() const
+{
+    kdebug(name + " " + range.to_string() + " current size: " + KString((uint32) current_size));
+}

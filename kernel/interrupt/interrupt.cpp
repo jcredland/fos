@@ -2,14 +2,14 @@
 #include <interrupt/interrupt.h>
 
 /*** CPU TRAPS ***/
-const char * interrupt_cpu_trap_names[19] = 
+const char * interrupt_cpu_trap_names[] = 
 {
     "Division by zero",
     "Debugger",
     "NMI",
     "Breakpoint",
     "Overflow",
-    "Bounds"
+    "Bounds",
     "Invalid Opcode",
     "Coprocessor not available",
     "Double fault",
@@ -31,9 +31,20 @@ void interrupt_cpu_trap_handler(int trap_number, uint32 error_code)
     kerror("cpu: trap.  cpu halted. trap_number=" + KString( (uint16) trap_number)); 
     kerror("error code: " + KString(error_code)); 
 
+    kerror("****** BLUE SCREEN OF DEAF! ****"); 
     KString error_message(interrupt_cpu_trap_names[trap_number]); 
 
     kerror(error_message); 
+    if (trap_number == 0xE)
+    {
+        uint32 addr; 
+        asm volatile ("mov %%cr2, %0" 
+                        :"=r" (addr)
+                        :
+                        ); 
+
+        kerror("Virtual Memeory Address: " + KString(addr)); 
+    }
 
     while (1) {}
 }
