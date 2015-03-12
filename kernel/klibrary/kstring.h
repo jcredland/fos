@@ -255,3 +255,4 @@ inline KString operator+(const char * lhs, const KString & rhs)
 }
 
 
+using kstring = KString; 

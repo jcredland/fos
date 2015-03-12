@@ -71,7 +71,7 @@ bool VirtualMemoryManager::is_command_supported (const KString& command)
     return (command == "vmem");
 }
 
-int VirtualMemoryManager::execute_cli_command (const kstd::kvector<KString>& parameter_list)
+int VirtualMemoryManager::execute_cli_command (const kvector<kstring> &)
 {
     vga.write ("vmm: kernel memory map");
     kernel_memory_map->display_debug(); 

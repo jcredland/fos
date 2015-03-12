@@ -10,18 +10,20 @@ In development. Boots and functions on QEMU. Not yet tested on real hardware.
 
 It has:
 -   A read only FAT16 file system. 
--   Memory management
+-   Physical and virtual memory management
 -   Text mode VGA driver
 -   A custom boot loader
 -   Interrupts
--   The beginnings of a keyboard driver
+-   A crude CLI
 
-And more.
+Next: 
+-   Kernel threads
+-   User processes and threads.
+
 ## Milestones
 Big milestones will be:
 -   VGA graphics driver (or SVGA). 
 -   libc
--   user processes
 -   SMP
 -   IPv6 stack
 

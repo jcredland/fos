@@ -39,6 +39,7 @@ class MemoryRegion
         void set_name(const KString & new_name) { name = new_name; }
 
         uintptr_t base_addr() const { return range.base; }
+        uintptr_t end_addr() const { return range.end; }
         uintptr_t size() const { return current_size; }
 
         /** Allocate physical memory to this region and map it 

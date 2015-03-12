@@ -1,17 +1,30 @@
 #include <klibrary/klibrary.h>
+#include <mem/mem.h>
 
 struct Process
 {
-    Process()
+    enum Type
+    {
+        Thread, 
+        UserProcess,
+        KernelProcess
+    };
+    Process(Process & parent_process, const kstring & _name, uint16 pid_number, Type _type)
         :
-            number(0),
+            name(_name),
+            pid(pid_number),
             entry_point(nullptr),
-            state(Invalid),
+            state(ReadyToPlay),
+            type(_type),
             stack_pointer(0),
-            stack(nullptr),
-            memory_map(nullptr)
-    {}
-    KString name;
+            memory_map(nullptr),
+            stack(nullptr)
+    {
+        parent_pid = parent_process.pid;
+    }
+
+    kstring name;
+    /** PIDs start at 1.  PID 0 means no parent. */
     uint16 pid; 
     uint16 parent_pid;
     void(*entry_point)(void);
@@ -24,19 +37,39 @@ struct Process
         Finished
     } state;
 
-    enum Type
-    {
-        Thread, 
-        UserProcess,
-        KernelProcess
-    } type;
+    Type type;
 
     uintptr_t stack_pointer;
 
-    MemoryRegion * stack; /* Used for threads. */
-    ProcessMemoryMap * memory_map; /* Used for processes. */
+    ProcessMemoryMap * memory_map; 
 
     bool is_void() const { return state == Invalid; }
+    void create_thread_stack(size_t size);
+
+    Process()
+        :
+            state(Invalid)
+    {}
+
+
+private:
+    MemoryRegion * stack; 
+
+    friend class ProcessTable;
+    /** Construct the root kernel process. */
+    Process(ProcessMemoryMap * kernel_memory_map) 
+        :
+            name("infernal kernel"),
+            pid(1), 
+            entry_point(nullptr),
+            state(Running),
+            type(KernelProcess),
+            stack_pointer(0), 
+            memory_map(kernel_memory_map),
+            stack(nullptr)
+    {}
+
+
 };
 
 class ProcessTable
@@ -49,7 +82,8 @@ class ProcessTable
         int get_current_pid(); 
 
     private:
-        Process get_process(uint16 pid);
+        void add_kernel_process(); 
+        int get_process_index(uint16 pid) const;
         kstd::kvector<Process> proc_table;
         uint16 current_pid;
         uint16 next_pid;

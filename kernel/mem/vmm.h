@@ -34,6 +34,7 @@ class VirtualMemoryManager
 
         /** Returns the MemoryRegion for the kernel heap. */
         MemoryRegion * get_kernel_heap_region(); 
+        ProcessMemoryMap * get_kernel_memory_map(); 
     private:
         void build_kernel_memory_map(); 
         void apply_default_configuration(ProcessMemoryMap *); 

@@ -1,22 +1,37 @@
-; Section jump
+;
+; x86 bootloader for FOS
+; Jim Credland
+; ----------------------------------------------
     section .text 
     global boot
     bits 16
     global sectors_to_load
 
+; ----------------------------------------------
+; Ensure DS is set to a sane value, and
+; jump over some stored data. 
 boot:
     xor bp, bp
     mov ds, bp
+    mov ss, bp
     jmp boot_start
-;sectors_to_load:
-;    dw 0
 
+; ----------------------------------------------
+; This section is populated by the linker with
+; the size of the kernel. 
     extern sectors_to_load
+
+; ----------------------------------------------
     section .text2
 
 boot_start:
-; configure stack. Segment registers presumed to be all 0.
-    mov bp, 0x7000 ; we are just putting it here - okay??
+; ----------------------------------------------
+; Configure stack. Putting it here allows it to 
+; go down to about 0x1000 before any trouble is 
+; caused.  That's 16kb.  As the kernel gets more 
+; complex we may have to find it a new bigger
+; home. 
+    mov bp, 0x7000 
     mov sp, bp
 ; store disk information
     mov [boot_drive], dl
@@ -27,17 +42,18 @@ boot_start:
     ;call check_a20
     ;cmp ax, 0 ; zero means memory wraps around ...  really we need to handle this
     ;je a20_error
-; -------
-; --- load stage 2
-; ***
+
+; ----------------------------------------------
+; Now we do the preparation for loading the rest
+; of the kernel. 
     call check_int13_extensions
     mov dl, [boot_drive]
     mov ax, [sectors_to_load]
     call read_disk_int13_ext
     jmp main_os_code
 
-; -------------
-; *** check_extensions_present
+; ----------------------------------------------
+; **FUNCTION check_extensions_present
 ; params: DL    drive number
 check_int13_extensions:
     mov ah, 0x41
@@ -54,7 +70,7 @@ check_int13_extensions:
 bios_extension_error_string:
     db 'No Int13 Ext', 0
 
-; -------------
+; ----------------------------------------------
 ; *** read_disk_int13_ext
 ; - reads the drive using the int13 extensions. 
 ;   see http://www.esapcsolutions.com/ecom/drawings/PhoenixBIOS4_rev6UserMan.pdf
@@ -77,14 +93,18 @@ read_disk_int13_ext:
 .dapLoadOffset
     dw 0x0000
 .dapLoadSegment
-    dw 0x07e0
+    dw 0x07e0 ; pre-populated with the load address (segment) for the kernel
 .dapStartSector
     dd 0x00000001
     dd 0x00000000
     
 .error
     mov bx, disk_error_string
-    ;jmp error_and_halt
+    ; we should halt here, but the disk read routine needs fine tuning: probably 
+    ; the size is too large, or we need to pad the kernel by 512 bytes so that 
+    ; qemu doesn't report an error when reading the last sector.  unclear what
+    ; the problem is at the moment!
+    ;jmp error_and_halt         
     ret
 
 ; -------------
@@ -303,8 +323,8 @@ call_ctors:
     [extern main]
     jmp main
 
-;------------------------
-; VGA DRIVER
+;----------------------------------
+; TOTALLY UNNECESSARY VGA DRIVER IN ASM.  MUST ALSO INSERT DANCING CHICKEN ANIMATION
 ;------------------------
     videomem_base equ 0xb8000
     videomem_end  equ 0xb8000 + 80 * 25
@@ -492,6 +512,8 @@ string:
     db 'Starting Stage 3', 0
    
    
+; ----------------------------------------------
+; GLOBAL DESCRIPTOR TABLE FOR PROTECTED MODE
 gdt:
 .start
 .null

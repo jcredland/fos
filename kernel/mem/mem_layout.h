@@ -12,19 +12,22 @@ struct MemoryRange
     uintptr_t base; 
     uintptr_t end; 
     uintptr_t base_addr() const { return base; }
+    uintptr_t end_addr() const { return end; }
     uintptr_t size() const { return end - base; }
-    KString to_string() const
-    {
-        return KString((uint32)base) + " to " + KString((uint32)end);
-    }
+    /** Return a user friendly representation of the address range. */
+    KString to_string() const;
+    const static MemoryRange null;
 }; 
 
+/** This is a separate type to avoid providing virtual addresses where we expect
+ * physical ones. Maybe some inheritence is the way to go. */
 struct PhysicalMemoryRange 
 {
     uintptr_t base; 
     uintptr_t end; 
     uintptr_t base_addr() const { return base; }
     uintptr_t size() const { return end - base; }
+    uintptr_t end_addr() const { return end; }
 }; 
 
 

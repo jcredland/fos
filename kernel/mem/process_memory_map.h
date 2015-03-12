@@ -60,16 +60,23 @@ class ProcessMemoryMap
          * fit but currently does first fit. */
         MemoryRange get_free_memory_range(size_t size_required, const MemoryRange & constrained_within)
         {
-            uintptr_t ptr = constrained_to.base_addr();
+            uintptr_t ptr = constrained_within.base_addr();
             MemoryRegion * c; 
 
             while (nullptr != (c = get_region_at_or_above(ptr)))
             {
                 if ((c->base_addr() - ptr) >= size_required)
-                    return MemoryRange(ptr, ptr + size_required); 
+                {
+                    uintptr_t proposed_end_addr = ptr + size_required; 
 
+                    if (proposed_end_addr < constrained_within.end_addr())
+                        return MemoryRange {ptr, ptr + size_required}; 
+                    else 
+                        return MemoryRange::null;
+                }
                 ptr = c->end_addr(); 
             }
+            return MemoryRange::null;
         }
 
         /** Because our array isn't sorted we use this horrible function.  It'd be nice to add allocator
@@ -90,8 +97,8 @@ class ProcessMemoryMap
                 }
             }
 
-            if (i != -1)
-                return regions[i];
+            if (region_number != -1)
+                return regions[region_number];
             else 
                 return nullptr;
         }

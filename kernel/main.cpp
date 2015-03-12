@@ -103,11 +103,12 @@ public:
 
     void test_thread()
     {
+        uint8 counter = 0; 
         while (1)
         {
             timer.delay_ms(500); 
             counter++;
-            vga.write(2, 2, KString(counter));
+            vga.write(2, 2, KString(counter).get());
         }
     }
 

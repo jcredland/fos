@@ -200,14 +200,15 @@ public:
     };
 
     
-    bool is_command_supported(const KString & cmd) override
+    bool is_command_supported(const kstring & cmd) override
     {
         return cmd == "kheap"; 
     }
 
-    int execute_cli_command(const kstd::kvector<KString> & params) override
+    int execute_cli_command(const kstd::kvector<kstring> &) override
     {
         kprint_debug(); 
+        return 0; 
     }
 
 private:
