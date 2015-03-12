@@ -19,12 +19,13 @@ It has:
 Next: 
 -   Kernel threads
 -   User processes and threads.
+-   Synchronisation primitives (std::thread, maybe?)
 
 ## Milestones
 Big milestones will be:
 -   VGA graphics driver (or SVGA). 
 -   libc
--   SMP
+-   SMP and 64-bit
 -   IPv6 stack
 
 ## Documentation
