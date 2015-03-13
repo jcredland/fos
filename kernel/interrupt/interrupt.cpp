@@ -1,5 +1,6 @@
 
 #include <interrupt/interrupt.h>
+#include <interrupt/stack_frame.h>
 
 /*** CPU TRAPS ***/
 const char * interrupt_cpu_trap_names[] = 
@@ -73,6 +74,7 @@ InterruptDriver::InterruptDriver(void(*default_handler)(int, uint32))
 
 extern char interrupt_stub_1; 
 extern char interrupt_stub_0;
+extern uintptr_t interrupt_stub_vectors;
 
 /*
  * This function reaches for our assembly interrupt handler stubs and 
@@ -80,13 +82,9 @@ extern char interrupt_stub_0;
  */
 void InterruptDriver::register_all_handlers()
 {
-    ptrdiff_t size = &interrupt_stub_1 - &interrupt_stub_0;
-    char * h = &interrupt_stub_0;
+    uintptr_t * vectors = &interrupt_stub_vectors;
     for (int i = 0; i < MAX_INTERRUPT_VECTORS; ++i)
-    {
-        set_vector_stub(i, h);
-        h += size;
-    }
+        set_vector_stub(i, (char*) *vectors++);
 }
 
 
@@ -97,9 +95,9 @@ extern "C"
  * It may or may not include the error code. If there is no error code then errorCode will
  * be set to zero. 
  */
-void interrupt_handler(uint8_t interrupt_num, uint16_t error_code)
+void interrupt_handler(InterruptStackFrame * isf)
 {
-    interrupt_driver.call_handler(interrupt_num, error_code);
+    interrupt_driver.call_handler(isf->interrupt_number, isf->error_code);
 }
 }
 

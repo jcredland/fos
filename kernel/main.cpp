@@ -10,6 +10,7 @@
 #include <hw/pci.h>
 #include <hw/timer.h>
 #include <proc/process.h>
+#include <proc/proc_man.h>
 #include <mem/mem.h>
 #include <cli/cli.h>
 
@@ -99,7 +100,7 @@ void proc_cli()
     cli_main(); 
 }
 
-/*
+
 class Kernel
 {
 public:
@@ -119,7 +120,6 @@ public:
         cli_register_command(&pmem); 
         cli_register_command(&vmem); 
         cli_register_command(&kheap); 
-        procman.launch_kthread(test_thread, "counter"); 
         cli_main(); 
     }
 
@@ -130,14 +130,16 @@ private:
     ATADrive ata_drive_kern;
     ATADrive ata_drive_data;
     Fat16 fat_fs2;
-};*/
+};
 
 int main()
 {
     setup_interrupts(); 
+    Kernel k; 
+    k.run(); 
     
-    procman.setup_initial_process(proc_cli); 
-    procman.start_scheduler(); // will never return.
+//    procman.setup_initial_process(proc_cli); 
+//    procman.start_scheduler(); // will never return.
 
     return 0;
 }

@@ -8,4 +8,5 @@ set history expansion on
 b *0x7c00
 symbol-file build/fos.sym
 b *0x8204
+alias stk = x/20w $esp
 c

@@ -118,12 +118,15 @@ private:
 
 extern InterruptDriver interrupt_driver;
 
+struct InterruptStackFrame; 
+
 extern "C"
 {
 /** This function is called by the interrupt handler stub when an interrupt occurs. 
- * It may or may not include the error code. If there is no error code then errorCode will
- * be set to zero. 
+ *
+ * It includes a lot of information about the calling processes context in the 
+ * InterruptStackFrame object.
  */
-void interrupt_handler(uint8_t interrupt_num, uint16_t error_code);
+void interrupt_handler(InterruptStackFrame * isf); 
 }
 
