@@ -1,12 +1,8 @@
 #pragma once
 #include <std_headers.h>
+#include <klibrary/kvector.h>
+#include <klibrary/clib.h>
 
-class DeviceInterruptHandler
-{
-public:
-    virtual ~DeviceInterruptHandler() {}
-    virtual void handle_interrupt(uint8 interrupt_number, uint32 error_code) = 0; 
-};
 /** 
  * A device is something that can be accessed from user or kernel land. 
  * The kernel maintains a list of available devices. 
@@ -25,9 +21,8 @@ class Device
         virtual const char * get_device_name() const = 0;
         /** Get the next item from the device's buffer.  Returns -1 if there is no character waiting. */
         virtual int read_char() = 0;
-    protected:
         /** Install a handler for an interrupt. */
-        void install_interrupt_handler(uint8 interrupt_number, DeviceInterruptHandler * handler);
+//        static void install_interrupt_handler(uint8 interrupt_number, DeviceInterruptHandler * handler);
     private:
 };
 
@@ -53,7 +48,7 @@ class DeviceManager
         }
 
     private:
-        kstd::kvector<Device *> registered_devices; 
+        kvector<Device *> registered_devices; 
 };
 
 extern DeviceManager device_manager;

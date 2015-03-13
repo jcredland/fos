@@ -1,6 +1,7 @@
 #pragma once
 
 #include <keyboard/kb_scancodes.h>
+#include <hw/device.h>
 
 /** @file
  * This set of classes and data can take a stream from the KeyboardHardware driver

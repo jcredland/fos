@@ -1,6 +1,7 @@
 #pragma once
 #include <klibrary/klibrary.h>
 #include <interrupt/interrupt.h>
+#include <hw/device.h>
 /**
  * The keyboard hardware driver takes scan codes and provides a stream of 
  * KeyboardKeyCodes. 

@@ -1,5 +1,6 @@
 #include <klibrary/klibrary.h>
 #include <disk/disk.h>
+#include <hw/timer.h>
 
 ATAControllerPIO::ATAControllerPIO (bool usePrimary)
 {

@@ -1,10 +1,12 @@
 ;
-; void switch_process(const uint32 stack_to_load, uint32 * stack_ptr_save_location)
+; void switch_process(const uint32 * stack_to_load, uint32 * stack_ptr_save_location)
 ;
 ; This switches stacks.  It's a magic trick.
 ;
 global switch_process
 switch_process:
+    push ebp
+    mov ebp, esp
     push eax
     push ebx
     push ecx
@@ -17,11 +19,12 @@ switch_process:
 
     ; TODO - save floating point state (and other stuff?)
 
-    mov eax, [esp + 12]
-    mov edx, [esp + 8]
+    mov edx, [ebp + 8]
+    mov eax, [ebp + 12]
     ; Pop a pill
     mov [eax], esp
-    mov esp, edx
+    mov eax, [edx]
+    mov esp, eax
    
     popf
     pop ebp
@@ -32,6 +35,7 @@ switch_process:
     pop ecx
     pop ebx
     pop eax
-   
+  
+    pop ebp 
     ; And come out of a different rabbit hole 
     ret 

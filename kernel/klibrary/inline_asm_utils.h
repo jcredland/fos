@@ -1,4 +1,5 @@
 #pragma once
+#include <std_types.h>
 
 #define F_DECLARE_NO_COPY(ClassName) ClassName(const ClassName &) = delete;
 
@@ -12,42 +13,42 @@
 
 #define kassert(x)  if (!(x)) { kerror("assertation failure: " + KString(__PRETTY_FUNCTION__)); while (1) {} }
 
-static inline void outb (uint16_t port, uint8_t val)
+static inline void outb (uint16 port, uint8 val)
 {
     asm volatile ("outb %0, %1" : : "a" (val), "Nd" (port));
     /* TODO: Is it wrong to use 'N' for the port? It's not a 8-bit constant. */
     /* TODO: Should %1 be %w1? */
 }
 
-static inline void outw (uint16_t port, uint16_t val)
+static inline void outw (uint16 port, uint16 val)
 {
     asm volatile ("outw %0, %1" : : "a" (val), "Nd" (port));
 }
 
-static inline void outl (uint16_t port, uint32_t val)
+static inline void outl (uint16 port, uint32 val)
 {
     asm volatile ("outl %0, %1" : : "a" (val), "Nd" (port));
 }
 
-static inline uint8_t inb (uint16_t port)
+static inline uint8 inb (uint16 port)
 {
-    uint8_t ret;
+    uint8 ret;
     asm volatile ("inb %1, %0" : "=a" (ret) : "Nd" (port));
     /* TODO: Is it wrong to use 'N' for the port? It's not a 8-bit constant. */
     /* TODO: Should %1 be %w1? */
     return ret;
 }
 
-static inline uint16_t inw (uint16_t port)
+static inline uint16 inw (uint16 port)
 {
-    uint16_t ret;
+    uint16 ret;
     asm volatile ("inw %1, %0" : "=a" (ret) : "Nd" (port));
     return ret;
 }
 
-static inline uint32_t inl (uint16_t port)
+static inline uint32 inl (uint16 port)
 {
-    uint32_t ret;
+    uint32 ret;
     asm volatile ("inl %1, %0" : "=a" (ret) : "Nd" (port));
     return ret;
 }
@@ -69,9 +70,9 @@ static inline bool are_interrupts_enabled()
     return flags & (1 << 9);
 }
 
-static inline uint64_t rdtsc()
+static inline uint64 rdtsc()
 {
-    uint64_t ret;
+    uint64 ret;
     asm volatile ("rdtsc" : "=A" (ret));
     return ret;
 }
@@ -87,9 +88,9 @@ static inline uint64_t rdtsc()
  * For any odd input this returns 0, because the first bit will be set. An
  * input of 0x8000 returns 15. 
  */
-static inline uint32_t bit_scan_forward_32(uint32_t value)
+static inline uint32 bit_scan_forward_32(uint32 value)
 {
-    uint32_t ret; 
+    uint32 ret; 
     asm volatile ("bsf %1, %0" : "=r" (ret) : "mr" (value)); 
     return ret; 
 }
@@ -99,9 +100,9 @@ static inline uint32_t bit_scan_forward_32(uint32_t value)
  *
  * For an input of 0x8000 returns 15. 
  */
-static inline uint32_t bit_scan_reverse_32(uint32_t value)
+static inline uint32 bit_scan_reverse_32(uint32 value)
 {
-    uint32_t ret; 
+    uint32 ret; 
     asm volatile ("bsr %1, %0" : "=r" (ret) : "mr" (value)); 
     return ret; 
 }

@@ -2,41 +2,34 @@
 #include <std_types.h>
 /** A simple string function that isn't dependent on kmalloc being 
  * available.  Limited to a fixed number of characters. */
-class KString
+class kstring
 {
 public:
     enum 
     {
         StringLen = 128
     };
-    KString()
+    kstring()
     {
         buf[0] = 0;
         buf[StringLen] = 0;
     }
 
-    KString (const char* string)
+    kstring (const char* string)
     {
         copy_from (buf, string, StringLen);
     }
 
-    KString (const KString & rhs)
+    kstring (const kstring & rhs)
     {
         copy_from (buf, rhs.buf, StringLen);
     }
 
-/*    template<typename OtherString>
-    KString (const OtherString & rhs)
-    {
-        copy_from (buf, rhs.buf, StringLen);
-    } */
-
-
-    /** Copy at most maxLength characters from a buffer string to the KString.
+    /** Copy at most maxLength characters from a buffer string to the kstring.
      * If the limit is reached before a null terminating character then a null
      * terminating character will be added. 
      * */
-    KString (const char* string, int maxLength)
+    kstring (const char* string, int maxLength)
     {
         if (maxLength < StringLen)
         {
@@ -54,19 +47,19 @@ public:
         buf[0] = 0; 
     }
 
-    KString (uint64_t hex_number) : KString()
+    kstring (uint64_t hex_number) : kstring()
     {
         append_hex (hex_number);
     }
-    KString (uint32_t hex_number) : KString()
+    kstring (uint32_t hex_number) : kstring()
     {
         append_hex (hex_number);
     }
-    KString (uint16_t hex_number) : KString()
+    kstring (uint16_t hex_number) : kstring()
     {
         append_hex (hex_number);
     }
-    KString (uint8_t  hex_number) : KString()
+    kstring (uint8_t  hex_number) : kstring()
     {
         append_hex (hex_number);
     }
@@ -128,20 +121,20 @@ public:
         copy_from (buf + len, tb, StringLen - len);
     }
 
-/*    KString& operator+ (const KString& rhs) const
+/*    kstring& operator+ (const kstring& rhs) const
     {
-        KString n(*this);kk
+        kstring n(*this);kk
             append (rhs);
         return *this;
     } */
 
-    KString& operator+= (const KString& rhs)
+    kstring& operator+= (const kstring& rhs)
     {
         append (rhs);
         return *this;
     }
 
-    bool operator== (const KString& rhs) const
+    bool operator== (const kstring& rhs) const
     {
         const char * a = rhs.buf; 
         const char * b = buf; 
@@ -153,7 +146,7 @@ public:
         return false;
     }
 
-    bool operator!= (const KString& rhs) const
+    bool operator!= (const kstring& rhs) const
     {
         return ! operator== (rhs); 
     }
@@ -165,7 +158,7 @@ public:
         return buf;
     }
 
-    void append (const KString& rhs)
+    void append (const kstring& rhs)
     {
         int len = length();
         copy_from (buf + len, rhs.get(), StringLen - len);
@@ -243,16 +236,16 @@ private:
 };
 
 
-inline KString operator+(const KString & lhs, const KString & rhs)
+inline kstring operator+(const kstring & lhs, const kstring & rhs)
 {
-    KString n(lhs); 
+    kstring n(lhs); 
     n.append(rhs);
     return n;
 }
-inline KString operator+(const char * lhs, const KString & rhs)
+inline kstring operator+(const char * lhs, const kstring & rhs)
 {
-    return KString(lhs) + rhs; 
+    return kstring(lhs) + rhs; 
 }
 
 
-using kstring = KString; 
+using KString = kstring; 

@@ -1,11 +1,13 @@
 if [ "$1x" == "-dx" ] ; then
-#    FLAGS="-d guest_errors,cpu_reset,int -s -S"       
     FLAGS="-s -S"       
 fi
 if [ "$1x" == "-fx" ] ; then
     CURSES=" "       
 else
     CURSES="-curses"
+fi
+if [ "$1x" == "-ddx" ] ; then
+    FLAGS="-d guest_errors,cpu_reset,int -s -S"       
 fi
 /usr/local/Cellar/qemu/2.1.2/bin/qemu-system-i386 build/fos.bin  -hdb build/disk2.img -no-reboot ${FLAGS} ${CURSES}
 #reset

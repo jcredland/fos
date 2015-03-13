@@ -1,8 +1,14 @@
 #pragma once
-
 #include <std_headers.h>
-#include <hw/device.h>
 #include <interrupt/interrupt_pic.h>
+
+/** Inherit this class and then add yourself to the interrupt driver handler. */
+class DeviceInterruptHandler
+{
+public:
+    virtual ~DeviceInterruptHandler() {}
+    virtual void handle_interrupt(uint8 interrupt_number, uint32 error_code) = 0; 
+};
 
 /** Raise an interrupt manually.  Useful for testing. */
 template <int N> static inline void raiseInterrupt (void)

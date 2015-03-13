@@ -62,7 +62,7 @@ void VirtualMemoryManager::destroy_process_memory_map (ProcessMemoryMap* map)
 }
 
 
-void VirtualMemoryManager::apply_default_configuration (ProcessMemoryMap* pmm)
+void VirtualMemoryManager::apply_default_configuration (ProcessMemoryMap*)
 {
 }
 

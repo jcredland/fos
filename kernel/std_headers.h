@@ -18,7 +18,6 @@
 #else
 /* Real Drivers. */
 #include <display/vga.h>
-#include "hw/timer.h"
 #endif
 
 

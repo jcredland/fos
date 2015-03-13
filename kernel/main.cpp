@@ -8,6 +8,8 @@
 #include <keyboard/keyboard.h>
 #include <hw/pci_devices.h>
 #include <hw/pci.h>
+#include <hw/timer.h>
+#include <proc/process.h>
 #include <mem/mem.h>
 #include <cli/cli.h>
 
@@ -69,19 +71,38 @@ void setup_interrupts()
 
 VgaDriver                   vga; 
 InterruptDriver             interrupt_driver (default_interrupt_handler);
-Timer                       timer;
 PhysicalMemoryManager       pmem; 
 VirtualMemoryManager        vmem; // this starts paging up.
 MemoryPool<MemoryRegion>    kheap(*vmem.get_kernel_heap_region());
 
 /* Things that require the heap to be available can now be started. */
 DeviceManager               device_manager;
+Timer                       timer;
+ProcessManager              procman;
 
+void proc_counter()
+{
+    uint8 counter = 0; 
+    while (1)
+    {
+        timer.delay_ms(500); 
+        counter++;
+        vga.write(73, 2, KString(counter).get());
+    }
+}
 
+void proc_cli()
+{
+    cli_register_command(&pmem); 
+    cli_register_command(&vmem); 
+    cli_register_command(&kheap); 
+    cli_main(); 
+}
+
+/*
 class Kernel
 {
 public:
-    /** Construct the kernel. */
     Kernel()
         :
         ata_drive_kern (ata_controller, 0),
@@ -98,20 +119,9 @@ public:
         cli_register_command(&pmem); 
         cli_register_command(&vmem); 
         cli_register_command(&kheap); 
+        procman.launch_kthread(test_thread, "counter"); 
         cli_main(); 
     }
-
-    void test_thread()
-    {
-        uint8 counter = 0; 
-        while (1)
-        {
-            timer.delay_ms(500); 
-            counter++;
-            vga.write(2, 2, KString(counter).get());
-        }
-    }
-
 
 
 private:
@@ -120,14 +130,14 @@ private:
     ATADrive ata_drive_kern;
     ATADrive ata_drive_data;
     Fat16 fat_fs2;
-};
+};*/
 
 int main()
 {
     setup_interrupts(); 
-
-    Kernel kernel;
-    kernel.run();
+    
+    procman.setup_initial_process(proc_cli); 
+    procman.start_scheduler(); // will never return.
 
     return 0;
 }

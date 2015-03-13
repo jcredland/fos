@@ -2,12 +2,14 @@
 #include <keyboard/kb_data.h>
 #include <keyboard/kb_hardware_driver.h>
 
+extern InterruptDriver interrupt_driver;
+
 KeyboardHardwareDriver::KeyboardHardwareDriver()
     :
     last_scan_code (0)
 {
     kerror ("registering keyboad interrupt handler");
-    install_interrupt_handler ( (uint8) Interrupt8259PIC::Interrupt::KEYBOARD, this);
+    interrupt_driver.set_handler ( (uint8) Interrupt8259PIC::Interrupt::KEYBOARD, this);
 }
 const char* KeyboardHardwareDriver::get_device_name() const
 {

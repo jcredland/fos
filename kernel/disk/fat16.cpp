@@ -153,7 +153,7 @@ bool Fat16::is_command_supported(const KString & cmd)
     return false;
 }
 
-void Fat16::execute_dir(const kstd::kvector<KString> & param_list)
+void Fat16::execute_dir(const kstd::kvector<KString> &)
 {
     Fat16::Directory dir(*this); 
     Fat16::DirectoryEntry entry; 
@@ -171,5 +171,6 @@ int Fat16::execute_cli_command(const kstd::kvector<KString> & param_list)
 {
     if (param_list[0] == "dir")
         execute_dir(param_list); 
+    return 0;
 }
 

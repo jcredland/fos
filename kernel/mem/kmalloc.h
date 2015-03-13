@@ -181,7 +181,7 @@ public:
     {
         int count = 0;
         FreeListNode * n = free_list_start;
-        size_t largest_block = 0;
+        //size_t largest_block = 0;
 
         while (n != nullptr)
         {

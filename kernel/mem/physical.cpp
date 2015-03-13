@@ -39,7 +39,7 @@ PhysicalMemoryManager::PhysicalMemoryManager()
         if (ptr->type == NORMAL_MEMORY && len >= (ma_upper_boundary))
         {
             memory_allocations = (unsigned char *) base;
-            vga.writeln(KString("Allocated memory for memory allocation table at:") + KString(uintptr_t(base))); 
+            vga.writeln(kstring("Allocated memory for memory allocation table at:") + kstring(uintptr_t(base))); 
             break;
         }
         ptr++;
@@ -145,7 +145,7 @@ void * PhysicalMemoryManager::get_pages(unsigned num_pages_required, unsigned lo
      * - translate the first bit position to a pointer. 
      * - return the pointer.
      */
-    kdebug("pmem: reserving " + KString((uint16) num_pages_required) + " from " + KString((uint16) lowest_page));
+    kdebug("pmem: reserving " + kstring((uint16) num_pages_required) + " from " + kstring((uint16) lowest_page));
     unsigned num_pages_found = 0; 
     unsigned possible_first_page;
    
@@ -160,7 +160,7 @@ void * PhysicalMemoryManager::get_pages(unsigned num_pages_required, unsigned lo
     {
         if (mem_table_index >= highest_entry_to_search)
         {
-            kerror("pmem: allocation failed, not enough free space: " + KString((uint32) mem_table_index) + " num:" + KString((uint32) num_pages_required) + " pg range:" + KString((uint16) lowest_page) + "."+ KString((uint16) highest_page)); 
+            kerror("pmem: allocation failed, not enough free space: " + kstring((uint32) mem_table_index) + " num:" + kstring((uint32) num_pages_required) + " pg range:" + kstring((uint16) lowest_page) + "."+ kstring((uint16) highest_page)); 
             while (1) {}
             return nullptr;
         }
@@ -275,15 +275,15 @@ void PhysicalMemoryManager::reserve_range(uintptr_t start, uintptr_t size)
 void PhysicalMemoryManager::print_debug(VgaDriver & vga)
 {
     vga.writeln("Memory Map Entries"); 
-    vga.writeln(KString("Size: ") + KString(ram_data_size));
+    vga.writeln(kstring("Size: ") + kstring(ram_data_size));
 
     MemoryMapEntry * ptr = &ram_data; 
     for (unsigned i=0; i < ram_data_size; ++i)
     {
-        KString s = "base_addr="; 
-        s += KString(ptr->base_addr);
+        kstring s = "base_addr="; 
+        s += kstring(ptr->base_addr);
         s += " len=";
-        s += KString(ptr->len);
+        s += kstring(ptr->len);
         s += " type=";
         switch (ptr->type)
         {
@@ -313,15 +313,15 @@ void PhysicalMemoryManager::print_debug(VgaDriver & vga)
         ptr++;
     }
 
-    vga.writeln(KString("Memory available ") + KString(available_memory / 1024) + "k");
+    vga.writeln(kstring("Memory available ") + kstring(available_memory / 1024) + "k");
 }
 
-bool PhysicalMemoryManager::is_command_supported(const KString & cmd)
+bool PhysicalMemoryManager::is_command_supported(const kstring & cmd)
 {
     return (cmd == "pmem");
 }
 
-int PhysicalMemoryManager::execute_cli_command(const kstd::kvector<KString> & parameter_list)
+int PhysicalMemoryManager::execute_cli_command(const kvector<kstring> & )
 {
     print_debug(vga); 
     return 0; 
