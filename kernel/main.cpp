@@ -94,13 +94,14 @@ void proc_counter()
 
 void proc_cli()
 {
+    procman.launch_kthread(proc_counter, "counter"); 
     cli_register_command(&pmem); 
     cli_register_command(&vmem); 
     cli_register_command(&kheap); 
     cli_main(); 
 }
 
-
+/*
 class Kernel
 {
 public:
@@ -131,15 +132,17 @@ private:
     ATADrive ata_drive_data;
     Fat16 fat_fs2;
 };
-
+*/
 int main()
 {
+    device_manager.register_device(new KeyboardHardwareDriver()); 
     setup_interrupts(); 
-    Kernel k; 
-    k.run(); 
-    
-//    procman.setup_initial_process(proc_cli); 
-//    procman.start_scheduler(); // will never return.
+    //Kernel k; 
+    //k.run(); 
+    kdebug("setup initial kernel thread...");     
+    procman.setup_initial_kernel_thread(proc_cli); 
+    kdebug("start scheduler...");     
+    procman.start_scheduler(); // will never return.
 
     return 0;
 }

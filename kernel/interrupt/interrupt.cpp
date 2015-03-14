@@ -95,7 +95,7 @@ extern "C"
  * It may or may not include the error code. If there is no error code then errorCode will
  * be set to zero. 
  */
-void interrupt_handler(InterruptStackFrame * isf)
+void interrupt_handler(SavedProcessContext * isf)
 {
     interrupt_driver.call_handler(isf->interrupt_number, isf->error_code);
 }

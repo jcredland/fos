@@ -46,8 +46,9 @@ const MemoryRange  kIdentityMappedRange    { 0x0,          0x400000 };
 
 
 /** KERNEL MEMORY - VIRTUAL ALLOCATION */
-const MemoryRange  kVRangeKernel           { 0x400000,     0x20000000 }; 
-const MemoryRange  kVRangeKernelHeap       { 0x400000,     0x800000 }; 
+const MemoryRange  kVRangeKernel                { 0x400000,     0x20000000 }; 
+const MemoryRange  kVRangeKernelHeap            { 0x400000,     0x800000 }; 
+const MemoryRange  kVRangeKernelThreadStacks    { 0x800000,     0xb00000 }; 
 
 
 /***************************/

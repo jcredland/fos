@@ -10,5 +10,7 @@
 #include "random.h"
 #include "kernel_log.h"
 #include "kvector.h"
+#include "sorted_list.h"
+
 #include "small_circular_buffer.h"
 

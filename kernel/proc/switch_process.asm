@@ -1,41 +1,28 @@
 ;
-; void switch_process(const uint32 * stack_to_load, uint32 * stack_ptr_save_location)
+; void switch_process(SavedKernelContext * new_stack_ptr, SavedKernelContext ** save_old_one_here)
 ;
 ; This switches stacks.  It's a magic trick.
 ;
-global switch_process
-switch_process:
-    push ebp
-    mov ebp, esp
-    push eax
-    push ebx
-    push ecx
-    push edx
+global switch_kernel_context
+switch_kernel_context
+    mov edx, [esp + 4]
+    mov eax, [esp + 8]
 
     push edi
     push esi
+    push ebx
     push ebp
-    pushf 
 
-    ; TODO - save floating point state (and other stuff?)
+    ; TODO - save floating point state (and other stuff?) or maybe we do this 
+    ; in the interrupt return
 
-    mov edx, [ebp + 8]
-    mov eax, [ebp + 12]
-    ; Pop a pill
     mov [eax], esp
-    mov eax, [edx]
-    mov esp, eax
+    mov esp, edx
    
-    popf
     pop ebp
+    pop ebx
     pop esi
     pop edi
     
-    pop edx
-    pop ecx
-    pop ebx
-    pop eax
-  
-    pop ebp 
     ; And come out of a different rabbit hole 
     ret 

@@ -58,6 +58,7 @@ SECTIONS
         *(.data);
         *(.rodata*);
         *(COMMON)
+        . = ALIGN(0x1000);
         _data_end = .;
     }
 /*    .sig : AT(0x7DFE)

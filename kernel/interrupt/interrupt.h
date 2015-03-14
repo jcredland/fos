@@ -118,7 +118,7 @@ private:
 
 extern InterruptDriver interrupt_driver;
 
-struct InterruptStackFrame; 
+struct SavedProcessContext; 
 
 extern "C"
 {
@@ -127,6 +127,6 @@ extern "C"
  * It includes a lot of information about the calling processes context in the 
  * InterruptStackFrame object.
  */
-void interrupt_handler(InterruptStackFrame * isf); 
+void interrupt_handler(SavedProcessContext * isf); 
 }
 

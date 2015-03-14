@@ -56,7 +56,7 @@ interrupt_continue:
     push edx
     push ebx
 
-    push esp
+    ;push esp
     push ebp
     push esi
     push edi
@@ -67,13 +67,17 @@ interrupt_continue:
     add esp, 4 ; and clean up.
 
 ; ----------------------------
-; general interrupt return code
+; INTERRUPT RETURN CODE
+; general interrupt return code is called directly when a new process
+; is added.  See ProcessManager and Process.
+
+global interrupt_return
 interrupt_return:
 
     pop edi
     pop esi
     pop ebp
-    pop esp
+    ;pop esp
 
     pop ebx
     pop edx

@@ -145,7 +145,6 @@ void * PhysicalMemoryManager::get_pages(unsigned num_pages_required, unsigned lo
      * - translate the first bit position to a pointer. 
      * - return the pointer.
      */
-    kdebug("pmem: reserving " + kstring((uint16) num_pages_required) + " from " + kstring((uint16) lowest_page));
     unsigned num_pages_found = 0; 
     unsigned possible_first_page;
    

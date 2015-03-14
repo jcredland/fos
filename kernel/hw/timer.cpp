@@ -19,7 +19,7 @@ Timer::Timer()
 void Timer::handle_interrupt(uint8 interrupt_number, uint32 error_code) 
 {
     timer++;
-    procman.timer_interrupt();
     Interrupt8259PIC::send_eoi (Interrupt8259PIC::IRQ::SYSTEM_TIMER);
+    procman.timer_interrupt();
 }
 

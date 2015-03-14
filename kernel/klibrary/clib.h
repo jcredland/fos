@@ -1,6 +1,18 @@
 #pragma once
 /** Functions that we'd normally find in the standard C library. */
 
+template <typename T> 
+const T & min(const T & a, const T & b)
+{
+    return a < b ? a : b; 
+}
+
+template <typename T> 
+const T & max(const T & a, const T & b)
+{
+    return a > b ? a : b; 
+}
+
 inline void memset(char* dest, int ch, size_t count)
 {
     while (count--)

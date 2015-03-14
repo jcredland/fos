@@ -19,7 +19,8 @@ class ProcessMemoryMap
     public:
         ProcessMemoryMap(MemoryPool<MemoryRange> & memory_pool_for_regions)
             :
-            vmm_heap(memory_pool_for_regions)
+            vmm_heap(memory_pool_for_regions),
+            regions(vmm_heap)
         {}
 
         void set_active()
@@ -47,60 +48,43 @@ class ProcessMemoryMap
             MemoryRegion* new_region = (MemoryRegion*) vmm_heap.malloc (sizeof (MemoryRegion));
             new_region = new (new_region) MemoryRegion(this);
 
-            if (region_count < kMaxRegions)
-                regions[region_count++] = new_region;
-            else
-                kerror("regions full - need to put kvector in."); 
+            regions.insert_sorted(new_region, 
+                    [](const MemoryRegion * a, const MemoryRegion * b) 
+                    { 
+                        return a->base_addr() > b->base_addr();  /* Assumes regions don't overlap */
+                    });
 
             return  new_region;
         }
 
-        /** Returns a free MemoryRange, that can be used for configuring a memory region, with the 
-         * size required and constrained to the specified MemoryRange. This function could do best
-         * fit but currently does first fit. */
-        MemoryRange get_free_memory_range(size_t size_required, const MemoryRange & constrained_within)
+        /** Returns a free MemoryRange, that can be used for configuring a memory region, 
+         * with the size required and constrained to the specified MemoryRange. This 
+         * function could do best fit but currently does first fit. */
+        MemoryRange get_free_memory_range(size_t size_required, 
+                                          const MemoryRange & constrained_within)
         {
-            uintptr_t ptr = constrained_within.base_addr();
-            MemoryRegion * c; 
-
-            while (nullptr != (c = get_region_at_or_above(ptr)))
+            uintptr_t start_of_space = constrained_within.base_addr();
+            uintptr_t end_of_space; 
+            for (auto r: regions)
             {
-                if ((c->base_addr() - ptr) >= size_required)
-                {
-                    uintptr_t proposed_end_addr = ptr + size_required; 
+                end_of_space = min(r->base_addr(), constrained_within.end_addr()); 
 
-                    if (proposed_end_addr < constrained_within.end_addr())
-                        return MemoryRange {ptr, ptr + size_required}; 
-                    else 
-                        return MemoryRange::null;
-                }
-                ptr = c->end_addr(); 
+                kdebug("considering space from : " + kstring(start_of_space) + " to " + kstring(end_of_space)); 
+
+                if (start_of_space < end_of_space && (end_of_space - start_of_space) >= size_required)
+                    return MemoryRange { start_of_space, start_of_space + size_required }; 
+
+                start_of_space = max(start_of_space, r->end_addr()); 
             }
-            return MemoryRange::null;
-        }
+            /* Consider the space between the end of the last region and the end of the possible space. */
+            end_of_space = constrained_within.end_addr(); 
+                
+            kdebug("considering space from : " + kstring(start_of_space) + " to " + kstring(end_of_space)); 
 
-        /** Because our array isn't sorted we use this horrible function.  It'd be nice to add allocator
-         * selection to the vector implementation and then use some nice STL generic programming for this
-         * task.  TODO over a coffee sometime. */
-        MemoryRegion * get_region_at_or_above(uintptr_t more_than)
-        {
-            int region_number = -1;
-            uintptr_t lowest_addr = 0xFFFFFFFF; 
-
-            for (int i = 0; i < region_count; ++i)
-            {
-                uintptr_t addr = regions[i]->base_addr();
-                if ((addr < lowest_addr) && (addr >= more_than))
-                {
-                    lowest_addr = addr; 
-                    region_number = i;
-                }
-            }
-
-            if (region_number != -1)
-                return regions[region_number];
-            else 
-                return nullptr;
+            if (start_of_space < end_of_space && (end_of_space - start_of_space) >= size_required)
+                return MemoryRange { start_of_space, start_of_space + size_required }; 
+            else
+                return MemoryRange::null;
         }
 
         void display_debug() const;
@@ -114,7 +98,7 @@ class ProcessMemoryMap
 
         MemoryPool<MemoryRange> & vmm_heap;
         IntelPageMapper page_mapper;
-        MemoryRegion * regions[kMaxRegions];
+        SortedList<MemoryRegion *, MemoryPool<MemoryRange> > regions;
         int region_count; 
 };
 
