@@ -8,7 +8,8 @@ class CliCommand
         virtual ~CliCommand() {} 
         /** Execute a command.  Must return an error code, 0 for success. */
         virtual bool is_command_supported(const KString & command) = 0; 
-        virtual int execute_cli_command(const kstd::kvector<KString> & parameter_list) = 0; 
+         
+        virtual int execute_cli_command(const kvector<kstring> & parameter_list) = 0; 
 };
 
 

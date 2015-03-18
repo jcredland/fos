@@ -51,6 +51,11 @@ public:
     {
         append_hex (hex_number);
     }
+    kstring (int hex_number) : kstring()
+    {
+        append_hex ((uint32_t) hex_number); 
+    }
+
     kstring (uint32_t hex_number) : kstring()
     {
         append_hex (hex_number);

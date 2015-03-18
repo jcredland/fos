@@ -16,62 +16,11 @@
 
 #include <disk/disk.h>
 
-/** Applications and utilities. */
-
-void halt ()
-{
-    kerror ("halted");
-    while (1) {}
-}
-
-void default_interrupt_handler (int interruptNumber, uint32 error_code)
-{
-    KString message ("interrupt: unhandled interrupt ");
-    message.append_hex ( (uint32_t) interruptNumber);
-    kdebug("err code: "); 
-    message.append_hex ( (uint32_t) error_code);
-    kerror (message);
-    halt();
-}
-
-void interrupt_generic (int, uint32)
-{
-    vga.write (1, 15, "Interrupt Handler Called");
-}
-
-void interrupt_system_timer (int, uint32)
-{
-    timer.timer++;
-    Interrupt8259PIC::send_eoi (Interrupt8259PIC::IRQ::SYSTEM_TIMER);
-}
-
-void setup_interrupts()
-{
-    Interrupt8259PIC::remap_interrupts();
-
-    interrupt_driver.set_handler ( (int) Interrupt8259PIC::Interrupt::SYSTEM_TIMER, interrupt_system_timer);
-    interrupt_driver.set_handler ( (int) Interrupt8259PIC::Interrupt::ATA1, interrupt_generic);
-
-    Interrupt8259PIC::enable_all();
-    InterruptDriver::enable_hardware_interrupts();
-}
-
-/**
- * To construct the kernel we build some basic systems in the following order: 
- * Global objects:
- * - construct vga text mode driver
- * - construct interrupt handler
- * - add the timer driver
- * - enable interrupts
- * - construct physical memory manager
- * - construct kernel heap
- *
- * Then we call the Kernel's constructor which now has the tools it needs to 
- * register device drivers and display diagnostic messages as required. 
- */ 
+/** It's important to get ready for interrupts and kernel heap allocation before
+ * loading drivers that depend on these facilities. */
 
 VgaDriver                   vga; 
-InterruptDriver             interrupt_driver (default_interrupt_handler);
+InterruptDriver             interrupt_driver;
 PhysicalMemoryManager       pmem; 
 VirtualMemoryManager        vmem; // this starts paging up.
 MemoryPool<MemoryRegion>    kheap(*vmem.get_kernel_heap_region());
@@ -88,7 +37,7 @@ void proc_counter()
     {
         timer.delay_ms(500); 
         counter++;
-        vga.write(73, 2, KString(counter).get());
+        vga.write(73, 2, kstring(counter).get());
     }
 }
 
@@ -98,6 +47,7 @@ void proc_cli()
     cli_register_command(&pmem); 
     cli_register_command(&vmem); 
     cli_register_command(&kheap); 
+    cli_register_command(&procman); 
     cli_main(); 
 }
 
@@ -136,16 +86,16 @@ private:
 int main()
 {
     device_manager.register_device(new KeyboardHardwareDriver()); 
-    setup_interrupts(); 
-    //Kernel k; 
-    //k.run(); 
-    kdebug("setup initial kernel thread...");     
+
+    Interrupt8259PIC::remap_interrupts();
+    Interrupt8259PIC::enable_all();
+    interrupt_driver.enable_hardware_interrupts(); 
+
     procman.setup_initial_kernel_thread(proc_cli); 
+
     kdebug("start scheduler...");     
     procman.start_scheduler(); // will never return.
 
     return 0;
 }
-
-
 

@@ -3,8 +3,6 @@
 #include <klibrary/kstring.h>
 #include <display/vga.h>
 
-
-
 enum KLogLevel
 {
     KL_ERROR,
@@ -26,6 +24,13 @@ void kerror (const KString& log)
 {
     vga.set_colour (VgaColours::white);
     klog (KL_ERROR, log);
+}
+
+void kpanic (const kstring & log)
+{
+    kerror ("**** halted");
+    kerror (log); 
+    while (1) {}
 }
 
 void khex_dump (const char* buffer, uint16 bytes_to_show)

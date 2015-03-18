@@ -2,6 +2,15 @@
 #include <interrupt/interrupt.h>
 #include <interrupt/stack_frame.h>
 
+void interrupt_default_handler (int interruptNumber, uint32 error_code)
+{
+    kstring message ("interrupt: unhandled interrupt ");
+    message.append_hex ( (uint32_t) interruptNumber);
+    kdebug("err code: "); 
+    message.append_hex ( (uint32_t) error_code);
+    kpanic (message);
+}
+
 /*** CPU TRAPS ***/
 const char * interrupt_cpu_trap_names[] = 
 {
@@ -50,7 +59,7 @@ void interrupt_cpu_trap_handler(int trap_number, uint32 error_code)
     while (1) {}
 }
 
-InterruptDriver::InterruptDriver(void(*default_handler)(int, uint32))
+InterruptDriver::InterruptDriver()
 {
     memset((char*)idt, 0, sizeof(idt));
 
@@ -61,7 +70,7 @@ InterruptDriver::InterruptDriver(void(*default_handler)(int, uint32))
         if (i < sizeof(interrupt_cpu_trap_names))
             handler[i] = interrupt_cpu_trap_handler; 
         else
-            handler[i] = default_handler;
+            handler[i] = interrupt_default_handler;
 
         device_handlers[i] = nullptr;
     }
@@ -88,6 +97,10 @@ void InterruptDriver::register_all_handlers()
 }
 
 
+void interrupt_generic (int interrupt_number, uint32)
+{
+    vga.write ("interrupt_generic: " + kstring(interrupt_number));
+}
 
 extern "C"
 {

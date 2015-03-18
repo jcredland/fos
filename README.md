@@ -15,11 +15,13 @@ It has:
 -   A custom boot loader
 -   Interrupts
 -   A crude CLI
+-   Kernel threads
+-   ps command 
 
 Next: 
--   Kernel threads
--   User processes and threads.
+-   some better text formatting, and a non 80x25 interface, or at least a crude implementation of 'more'.  debugging will be easier then.
 -   Synchronisation primitives (std::thread, maybe?)
+-   User processes and threads.
 
 ## Milestones
 Big milestones will be:

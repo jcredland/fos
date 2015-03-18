@@ -12,7 +12,5 @@ be valid in all cases.
 A better map of the kernel architecture would help.
 Some of this is started on Google Drive.
 
-# Locking
-Need this. 
 
 
